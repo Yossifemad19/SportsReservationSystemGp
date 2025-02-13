@@ -5,6 +5,6 @@ namespace backend.Api.Services;
 
 public interface IAuthService
 {
-    public string Register(RegisterDto registerDto);
-    public string Login(LoginDto loginDto);
+    public Task<string> Register(RegisterDto registerDto);
+    public Task<string> Login(LoginDto loginDto);
 }

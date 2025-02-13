@@ -1,4 +1,5 @@
 using backend.Api.DTOs;
+using backend.Api.Services;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -12,21 +13,38 @@ namespace backend.Api.Controllers;
 public class AuthController: ControllerBase
 {
     private readonly IGenericRepository<UserCredential> _repository;
+    private readonly IAuthService _authService;
 
-    public AuthController(IGenericRepository<UserCredential> repository)
+    public AuthController(IGenericRepository<UserCredential> repository,IAuthService authService)
     {
         _repository = repository;
+        _authService = authService;
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        return Ok();
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        var result = await _authService.Login(loginDto);
+        if(String.IsNullOrEmpty(result))
+            return BadRequest("Username or password is incorrect");
+        
+        return Ok(result);
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
-        return Ok();
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        var result = await _authService.Register(registerDto);
+        
+        if(String.IsNullOrEmpty(result))
+            return BadRequest("Failed to register user");
+        
+        return Ok(result);
     }
 }

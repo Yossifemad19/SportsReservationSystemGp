@@ -25,4 +25,11 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         var entity= await _dbSet.FirstOrDefaultAsync(predicate);
         return entity;
     }
+    
+    // for test login
+    public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate,Expression<Func<Entity,object>> include)
+    {
+        var entity= await _dbSet.Include(include).FirstOrDefaultAsync(predicate);
+        return entity;
+    }
 }

@@ -10,7 +10,7 @@ public class UserCredentialConfigurations:IEntityTypeConfiguration<UserCredentia
     {
         builder.HasKey(x => x.Id);
         builder.Property(x=>x.Email).IsRequired()
-            .HasColumnType("varchar(20)")
+            .HasColumnType("varchar(30)")
             ;
         builder.HasIndex(x=>x.Email).IsUnique();
         
