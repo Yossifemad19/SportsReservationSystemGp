@@ -10,4 +10,7 @@ public class UserCredential
     public DateTime CreatedAt { get; set; }
 
     public UserProfile? UserProfile { get; set; }
+
+    public OwnerProfile? OwnerProfile { get; set; }
+    
 }

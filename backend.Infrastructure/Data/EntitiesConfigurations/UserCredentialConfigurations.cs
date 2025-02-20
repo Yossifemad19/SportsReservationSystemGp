@@ -22,6 +22,7 @@ public class UserCredentialConfigurations:IEntityTypeConfiguration<UserCredentia
         
         // Relations
         builder.HasOne(x=>x.UserProfile).WithOne(x=>x.UserCredential);
-        
+        builder.HasOne(x => x.OwnerProfile).WithOne(x => x.UserCredential);
+
     }
 }

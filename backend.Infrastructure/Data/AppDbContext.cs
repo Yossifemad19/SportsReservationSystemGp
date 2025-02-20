@@ -20,4 +20,5 @@ public class AppDbContext: DbContext
     
     public DbSet<UserCredential> UserCredentials { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<OwnerProfile> OwnerProfiles { get; set; }
 }

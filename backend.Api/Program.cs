@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using FluentValidation.AspNetCore;
+using backend.Api.Helpers;
 
 namespace backend.Api;
 
@@ -56,10 +57,12 @@ public class Program
         
         // configure auto mapper
         builder.Services.AddAutoMapper(typeof(Program).Assembly);
+        
 
-        
+
+
         // Add services to the container.
-        
+
         builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
 
         builder.Services.AddScoped<ITokenService, TokenService>();
@@ -67,6 +70,9 @@ public class Program
         builder.Services.AddScoped<IAuthService, AuthService>();
 
         
+
+
+
         builder.Services.AddControllers()
             .AddFluentValidation(f => {
                 f.RegisterValidatorsFromAssemblyContaining<RegisterDto>();

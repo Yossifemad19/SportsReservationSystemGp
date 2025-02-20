@@ -7,4 +7,6 @@ public interface IAuthService
 {
     public Task<string> Register(RegisterDto registerDto);
     public Task<string> Login(LoginDto loginDto);
+    public Task<string> OwnerRegister(FacilityOwnerDTO facilityOwnerDTO);
+
 }
