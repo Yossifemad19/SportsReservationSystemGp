@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace backend.Api.Controllers;
 
 [Route("api/[controller]")]
-public class OwnerAuthController : Controller
+public class OwnerAuthController : ControllerBase
 {
     private readonly IGenericRepository<UserCredential> _repository;
     private readonly IAuthService _OwnerAuthService;

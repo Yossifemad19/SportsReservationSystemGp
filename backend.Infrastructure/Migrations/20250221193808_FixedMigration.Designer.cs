@@ -12,8 +12,8 @@ using backend.Repository.Data;
 namespace backend.Repository.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250218193510_FixFacilitiesNumberType")]
-    partial class FixFacilitiesNumberType
+    [Migration("20250221193808_FixedMigration")]
+    partial class FixedMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

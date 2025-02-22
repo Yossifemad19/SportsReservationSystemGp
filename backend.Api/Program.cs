@@ -34,10 +34,11 @@ public class Program
                     ValidAudience = builder.Configuration["jwt:Audience"],
                     ValidateLifetime=true,
                 });
-        
-        
+
+
         Env.Load(Path.Combine(Directory.GetParent(
-            Directory.GetCurrentDirectory())!.FullName,".env"));
+            Directory.GetCurrentDirectory())!.FullName, ".env"));
+        //Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
         var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
         var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 
