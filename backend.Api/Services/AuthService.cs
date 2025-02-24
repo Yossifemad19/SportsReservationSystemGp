@@ -68,6 +68,18 @@ public class AuthService: IAuthService
         return null;
     }
 
+    public async Task<string> OwnerLogin(OwnerLoginDto ownerLoginDto)
+    {
+        // not work yet   //need specification for include or another handling way
+        var owner = await _ownerRepository.FindAsync(x => x.UserCredential.Email == ownerLoginDto.Email, x => x.UserCredential);
+        if (owner != null && ValidatePassword(ownerLoginDto.Password, owner.UserCredential.PasswordHash))
+        {
+            var token = _tokenService.GenerateToken(owner);
+            return token;
+        }
+        return null;
+    }
+
 
     private string GetHashedPassword(string password)
     {

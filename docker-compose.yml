@@ -9,7 +9,8 @@ services:
       - "5285:5285"
       - "7272:7272"
     environment:
-      - ASPNETCORE_URLS=https://+:7272;http://+:5285
+      - ASPNETCORE_URLS=http://+:5285
+      - DOTNET_ENVIRONMENT=Development
       - POSTGRES_USER=zeiad
       - POSTGRES_PASSWORD=12345
       - ConnectionStrings__PostgreSql=Host=postgres;Port=5432;Database=mydatabase;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
