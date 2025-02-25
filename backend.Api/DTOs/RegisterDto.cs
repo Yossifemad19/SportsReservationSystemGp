@@ -8,5 +8,5 @@ public class RegisterDto
     public string Password { get; set; }
     public string ConfirmedPassword { get; set; }
     public string? PhoneNumber { get; set; }
-    public string? Address { get; set; }
+
 }

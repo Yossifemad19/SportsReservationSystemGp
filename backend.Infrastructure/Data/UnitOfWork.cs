@@ -1,4 +1,5 @@
 using System.Collections;
+using backend.Core.Entities;
 using backend.Core.Interfaces;
 
 namespace backend.Repository.Data;
@@ -24,7 +25,7 @@ public class UnitOfWork : IUnitOfWork
         _context.Dispose();
     }
 
-    public IGenericRepository<T> Repository<T>() where T : class
+    public IGenericRepository<T> Repository<T>() where T : BaseEntity
     {
         if(_repositories==null) _repositories = new Hashtable();
 

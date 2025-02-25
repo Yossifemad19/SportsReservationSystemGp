@@ -26,12 +26,13 @@ public class TokenService:ITokenService
 
         _signingKey =new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
     }
-    public string GenerateToken(UserProfile user) 
+    public string GenerateToken(User user) 
     {
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role,user.UserRole.ToString()),
         };
 
         var token = new JwtSecurityToken(
@@ -45,22 +46,22 @@ public class TokenService:ITokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public string GenerateToken(OwnerProfile owner)
-    {
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, owner.Id.ToString()),
+    // public string GenerateToken(OwnerProfile owner)
+    // {
+    //     var claims = new[]
+    //     {
+    //         new Claim(ClaimTypes.NameIdentifier, owner.Id.ToString()),
+    //
+    //     };
+    //
+    //     var token = new JwtSecurityToken(
+    //         issuer: _issuer,
+    //         audience: _audience,
+    //         claims: claims,
+    //         expires: DateTime.UtcNow.AddMinutes(30),
+    //         signingCredentials: new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256)
+    //     );
 
-        };
-
-        var token = new JwtSecurityToken(
-            issuer: _issuer,
-            audience: _audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(30),
-            signingCredentials: new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256)
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
+    //     return new JwtSecurityTokenHandler().WriteToken(token);
+    // }
 }

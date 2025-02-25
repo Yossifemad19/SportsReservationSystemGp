@@ -12,12 +12,10 @@ namespace backend.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController: ControllerBase
 {
-    private readonly IGenericRepository<UserCredential> _repository;
     private readonly IAuthService _authService;
 
-    public AuthController(IGenericRepository<UserCredential> repository,IAuthService authService)
+    public AuthController(IAuthService authService)
     {
-        _repository = repository;
         _authService = authService;
     }
 
@@ -32,7 +30,7 @@ public class AuthController: ControllerBase
         
         return Ok(result);
     }
-
+    
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
@@ -40,7 +38,7 @@ public class AuthController: ControllerBase
         {
             return BadRequest(ModelState);
         }
-        var result = await _authService.Register(registerDto);
+        var result = await _authService.Register(registerDto,UserRole.Customer);
         
         if(String.IsNullOrEmpty(result))
             return BadRequest("Failed to register user");

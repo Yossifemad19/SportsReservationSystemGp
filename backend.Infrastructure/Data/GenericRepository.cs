@@ -1,10 +1,11 @@
 using System.Linq.Expressions;
+using backend.Core.Entities;
 using backend.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repository.Data;
 
-public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity : class
+public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity : BaseEntity
 {
     private readonly AppDbContext _context;
     private readonly DbSet<Entity> _dbSet;

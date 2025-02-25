@@ -3,7 +3,7 @@ using backend.Core.Entities;
 
 namespace backend.Core.Interfaces;
 
-public interface IGenericRepository<T> where T : class
+public interface IGenericRepository<T> where T : BaseEntity
 {
     void Add(T entity);
     
