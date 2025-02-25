@@ -1218,10 +1218,7 @@
       },
       "backend.Core/1.0.0": {
         "runtime": {
-          "backend.Core.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "backend.Core.dll": {}
         }
       },
       "backend.Infrastructure/1.0.0": {
@@ -1230,10 +1227,7 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.3"
         },
         "runtime": {
-          "backend.Infrastructure.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "backend.Infrastructure.dll": {}
         }
       }
     }
