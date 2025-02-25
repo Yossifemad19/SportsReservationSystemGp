@@ -15,7 +15,7 @@ services:
       - POSTGRES_PASSWORD=12345
       - ConnectionStrings__PostgreSql=Host=postgres;Port=5432;Database=mydatabase;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     volumes:
-      - C:\Users\zeiad\source\repos\Yossifemad19\SportsReservationSystemGp\published:/app
+      - ./published:/app   
     working_dir: /app
     command: ["dotnet", "backend.Api.dll"]
     depends_on:
@@ -36,3 +36,4 @@ services:
 
 volumes:
   postgres_data:
+  backend_app_data:  
