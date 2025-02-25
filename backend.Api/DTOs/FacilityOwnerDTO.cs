@@ -13,3 +13,11 @@ public class FacilityOwnerDTO
     public string FacilitiesLocation { get; set; }
     public int FacilitiesNumber { get; set; }
 }
+
+public class OwnerLoginDto
+{
+    [Required(ErrorMessage = "Email Is Required"), EmailAddress(ErrorMessage = "Invalid Email Format")]
+    public string Email { get; set; }
+    [Required(ErrorMessage = "Password Is Required")]
+    public string Password { get; set; }
+}

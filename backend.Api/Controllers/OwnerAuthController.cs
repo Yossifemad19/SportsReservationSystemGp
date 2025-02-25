@@ -33,4 +33,16 @@ public class OwnerAuthController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPost("OwnerLogin")]
+    public async Task<IActionResult> OwnerLogin([FromBody] OwnerLoginDto ownerLoginDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        var result = await _OwnerAuthService.OwnerLogin(ownerLoginDto);
+        if (String.IsNullOrEmpty(result))
+            return BadRequest("Username or password is incorrect");
+
+        return Ok(result);
+    }
 }
