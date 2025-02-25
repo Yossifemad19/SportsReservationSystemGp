@@ -2,6 +2,7 @@ using backend.Api.DTOs;
 using backend.Api.Services;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -46,6 +47,7 @@ public class AuthController: ControllerBase
         return Ok(result);
     }
 
+   
 
    
 }
