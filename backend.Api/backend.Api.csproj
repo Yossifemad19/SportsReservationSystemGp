@@ -26,4 +26,32 @@
     <ProjectReference Include="..\backend.Infrastructure\backend.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="published\published\published\published\published\web.config" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\web.config" />
+    <_ContentIncludedByDefault Remove="published\published\published\web.config" />
+    <_ContentIncludedByDefault Remove="published\published\web.config" />
+    <_ContentIncludedByDefault Remove="published\web.config" />
+    <_ContentIncludedByDefault Remove="published\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="published\appsettings.json" />
+    <_ContentIncludedByDefault Remove="published\backend.Api.deps.json" />
+    <_ContentIncludedByDefault Remove="published\backend.Api.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="published\published\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="published\published\appsettings.json" />
+    <_ContentIncludedByDefault Remove="published\published\backend.Api.deps.json" />
+    <_ContentIncludedByDefault Remove="published\published\backend.Api.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\appsettings.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\backend.Api.deps.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\backend.Api.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\appsettings.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\backend.Api.deps.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\backend.Api.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\published\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\published\appsettings.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\published\backend.Api.deps.json" />
+    <_ContentIncludedByDefault Remove="published\published\published\published\published\backend.Api.runtimeconfig.json" />
+  </ItemGroup>
+
 </Project>

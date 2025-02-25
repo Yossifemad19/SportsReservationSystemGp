@@ -14,10 +14,9 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         _context = context;
         _dbSet = _context.Set<Entity>();
     }
-    public async Task<int> AddAsync(Entity entity)
+    public void Add(Entity entity)
     {
         _dbSet.Add(entity);
-        return await _context.SaveChangesAsync();
     }
 
     public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate)

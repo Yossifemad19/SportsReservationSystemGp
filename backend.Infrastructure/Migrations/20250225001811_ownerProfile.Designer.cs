@@ -12,8 +12,8 @@ using backend.Repository.Data;
 namespace backend.Repository.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250221193808_FixedMigration")]
-    partial class FixedMigration
+    [Migration("20250225001811_ownerProfile")]
+    partial class ownerProfile
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,6 +45,9 @@ namespace backend.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(10)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("varchar(10)");
@@ -61,7 +64,7 @@ namespace backend.Repository.Migrations
                     b.HasIndex("UserCredentialId")
                         .IsUnique();
 
-                    b.ToTable("OwnerProfiles");
+                    b.ToTable("OwnerProfile");
                 });
 
             modelBuilder.Entity("backend.Core.Entities.UserCredential", b =>

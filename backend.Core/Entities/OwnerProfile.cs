@@ -14,7 +14,7 @@ public class OwnerProfile
     public string? PhoneNumber { get; set; }
     public string FacilitiesLocation { get; set; }
     public int FacilitiesNumber { get; set; }
-
+    public bool IsActive { get; set; }
     public int UserCredentialId { get; set; }
     public UserCredential UserCredential { get; set; }
 }

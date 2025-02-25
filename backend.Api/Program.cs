@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using FluentValidation.AspNetCore;
 using backend.Api.Helpers;
+using Microsoft.AspNetCore.Identity;
 
 namespace backend.Api;
 
@@ -18,7 +19,7 @@ namespace backend.Api;
 public class Program
 {
     
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         
@@ -69,7 +70,7 @@ public class Program
         builder.Services.AddScoped<ITokenService, TokenService>();
 
         builder.Services.AddScoped<IAuthService, AuthService>();
-
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         
 
 
@@ -99,6 +100,22 @@ public class Program
 
 
         app.MapControllers();
+        
+        using var scope = app.Services.CreateScope();
+        var services = scope.ServiceProvider;
+        var logger = services.GetRequiredService<ILogger<Program>>();
+
+        try
+        {
+            var context = services.GetRequiredService<AppDbContext>();
+            await context.Database.MigrateAsync();
+            logger.LogInformation( "database updated");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred during migration");
+        }
+
 
         app.Run();
     }
