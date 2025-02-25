@@ -3,9 +3,10 @@ using backend.Core.Entities;
 
 namespace backend.Core.Interfaces;
 
-public interface IGenericRepository<T> where T : class
+public interface IGenericRepository<T> where T : BaseEntity
 {
-    Task<int> AddAsync(T entity);
+    void Add(T entity);
+    
     Task<T> FindAsync(Expression<Func<T, bool>> predicate);
     Task<T> FindAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> include);
 }

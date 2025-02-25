@@ -8,13 +8,11 @@ public class MappingProfiles: Profile
 {
     public MappingProfiles()
     {
-        CreateMap<RegisterDto, UserProfile>()
-            // because I'm not able to map it direct
-            .ForPath(dest => dest.UserCredential.Email, opt => opt.MapFrom(src => src.Email));
-
-        CreateMap<FacilityOwnerDTO, OwnerProfile>()
-            // because I'm not able to map it direct
-            .ForPath(dest => dest.UserCredential.Email, opt => opt.MapFrom(src => src.Email));
+        CreateMap<RegisterDto, User>();
+            
+        // CreateMap<FacilityOwnerDTO, OwnerProfile>()
+        //     // because I'm not able to map it direct
+        //     .ForPath(dest => dest.UserCredential.Email, opt => opt.MapFrom(src => src.Email));
     }
 }
 

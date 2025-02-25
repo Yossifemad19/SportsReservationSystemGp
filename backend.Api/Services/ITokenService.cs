@@ -4,7 +4,7 @@ namespace backend.Api.Services;
 
 public interface ITokenService
 {
-    string GenerateToken(UserProfile user);
-    string GenerateToken(OwnerProfile owner);
+    string GenerateToken(User user);
+    // string GenerateToken(OwnerProfile owner);
 
 }

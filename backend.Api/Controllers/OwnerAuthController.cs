@@ -9,24 +9,22 @@ namespace backend.Api.Controllers;
 [Route("api/[controller]")]
 public class OwnerAuthController : ControllerBase
 {
-    private readonly IGenericRepository<UserCredential> _repository;
     private readonly IAuthService _OwnerAuthService;
 
-    public OwnerAuthController(IGenericRepository<UserCredential> repository, IAuthService OwnerAuthService)
+    public OwnerAuthController(IAuthService OwnerAuthService)
     {
-        _repository = repository;
         _OwnerAuthService = OwnerAuthService;
     }
 
 
     [HttpPost("OwnerRegister")]
-    public async Task<IActionResult> OwnerRegister([FromBody] FacilityOwnerDTO facilityOwnerDTO)
+    public async Task<IActionResult> OwnerRegister([FromBody] RegisterDto registerDto)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        var result = await _OwnerAuthService.OwnerRegister(facilityOwnerDTO);
+        var result = await _OwnerAuthService.Register(registerDto,UserRole.Owner);
 
         if (String.IsNullOrEmpty(result))
             return BadRequest("Failed to register user");
@@ -35,11 +33,11 @@ public class OwnerAuthController : ControllerBase
     }
 
     [HttpPost("OwnerLogin")]
-    public async Task<IActionResult> OwnerLogin([FromBody] OwnerLoginDto ownerLoginDto)
+    public async Task<IActionResult> OwnerLogin([FromBody] LoginDto loginDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var result = await _OwnerAuthService.OwnerLogin(ownerLoginDto);
+        var result = await _OwnerAuthService.Login(loginDto);
         if (String.IsNullOrEmpty(result))
             return BadRequest("Username or password is incorrect");
 

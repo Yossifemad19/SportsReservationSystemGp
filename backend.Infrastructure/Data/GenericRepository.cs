@@ -1,10 +1,11 @@
 using System.Linq.Expressions;
+using backend.Core.Entities;
 using backend.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repository.Data;
 
-public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity : class
+public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity : BaseEntity
 {
     private readonly AppDbContext _context;
     private readonly DbSet<Entity> _dbSet;
@@ -14,10 +15,9 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         _context = context;
         _dbSet = _context.Set<Entity>();
     }
-    public async Task<int> AddAsync(Entity entity)
+    public void Add(Entity entity)
     {
         _dbSet.Add(entity);
-        return await _context.SaveChangesAsync();
     }
 
     public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate)

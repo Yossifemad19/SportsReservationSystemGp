@@ -10,23 +10,26 @@ namespace backend.Api.Services;
 public class AuthService: IAuthService
 {
     private readonly IMapper _mapper;
-    private readonly IGenericRepository<UserProfile> _userRepository;
-    private readonly IGenericRepository<OwnerProfile> _ownerRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenService _tokenService;
 
-    public AuthService(IMapper mapper,IGenericRepository<UserProfile> userRepository,IGenericRepository<OwnerProfile> ownerRepository,ITokenService tokenService)
+    
+    public AuthService(IMapper mapper,IUnitOfWork unitOfWork,ITokenService tokenService)
     {
         _mapper = mapper;
-        _userRepository = userRepository;
-        _ownerRepository = ownerRepository;
+        _unitOfWork = unitOfWork;
         _tokenService = tokenService;
     }
-    public async Task<string> Register(RegisterDto registerDto)
+    public async Task<string> Register(RegisterDto registerDto,UserRole userRole)
     {
-        var user_profile = _mapper.Map<UserProfile>(registerDto);
-        user_profile.UserCredential.PasswordHash=GetHashedPassword(registerDto.Password);
-        var result =await _userRepository.AddAsync(user_profile);
-        if (result > 0)
+        var user_profile = _mapper.Map<User>(registerDto);
+        user_profile.UserRole = userRole;
+        
+        user_profile.PasswordHash=GetHashedPassword(registerDto.Password);
+        
+        // var result =await _userRepository.AddAsync(user_profile);
+        _unitOfWork.Repository<User>().Add(user_profile);
+        if (await _unitOfWork.CompleteAsync() > 0)
         {
             var token = _tokenService.GenerateToken(user_profile);
             return token;
@@ -36,9 +39,8 @@ public class AuthService: IAuthService
 
     public async Task<string> Login(LoginDto loginDto)
     {
-        // not work yet   //need specification for include or another handling way
-        var user=await _userRepository.FindAsync(x=>x.UserCredential.Email  == loginDto.Email,x=>x.UserCredential);
-        if (user != null && ValidatePassword(loginDto.Password, user.UserCredential.PasswordHash))
+        var user=await _unitOfWork.Repository<User>().FindAsync(x=>x.Email  == loginDto.Email);
+        if (user != null && ValidatePassword(loginDto.Password, user.PasswordHash))
         {
             var token = _tokenService.GenerateToken(user);
             return token;
@@ -46,39 +48,7 @@ public class AuthService: IAuthService
         return null;  
     }
 
-    public async Task<string> OwnerRegister(FacilityOwnerDTO facilityOwnerDTO)
-    {
-        var ownerProfile = _mapper.Map<OwnerProfile>(facilityOwnerDTO);
-
-        // Ensure UserCredential is initialized
-        ownerProfile.UserCredential = new UserCredential
-        {
-            Email = facilityOwnerDTO.Email,
-            PasswordHash = GetHashedPassword(facilityOwnerDTO.Password)
-        };
-
-        var result = await _ownerRepository.AddAsync(ownerProfile);
-
-        if (result > 0)
-        {
-            var token = _tokenService.GenerateToken(ownerProfile);
-            return token;
-        }
-
-        return null;
-    }
-
-    public async Task<string> OwnerLogin(OwnerLoginDto ownerLoginDto)
-    {
-        // not work yet   //need specification for include or another handling way
-        var owner = await _ownerRepository.FindAsync(x => x.UserCredential.Email == ownerLoginDto.Email, x => x.UserCredential);
-        if (owner != null && ValidatePassword(ownerLoginDto.Password, owner.UserCredential.PasswordHash))
-        {
-            var token = _tokenService.GenerateToken(owner);
-            return token;
-        }
-        return null;
-    }
+    
 
 
     private string GetHashedPassword(string password)
