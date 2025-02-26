@@ -38,9 +38,8 @@ public class Program
                 });
 
 
-        Env.Load(Path.Combine(Directory.GetParent(
-            Directory.GetCurrentDirectory())!.FullName, ".env"));
-        //Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+        Env.Load(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env"));
+
         var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
         var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 
@@ -48,12 +47,19 @@ public class Program
         {
             throw new Exception("Missing environment variables.");
         }
-        
-        var connectionString = builder.Configuration.GetConnectionString("PostgreSql")!
-            .Replace("{POSTGRES_USER}", Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "default_user")
-            .Replace("{POSTGRES_PASSWORD}", Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "default_password");
-        Console.WriteLine($"Connection string: {connectionString}");
-        
+
+// Get the connection string from configuration
+        var rawConnectionString = builder.Configuration.GetConnectionString("PostgreSql");
+
+// Replace placeholders correctly
+        var connectionString = rawConnectionString!
+            .Replace("${POSTGRES_USER}", postgresUser)
+            .Replace("${POSTGRES_PASSWORD}", postgresPassword);
+
+        Console.WriteLine($"Final Connection String: {connectionString}");
+
+
+
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
         
@@ -117,12 +123,16 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
+        // if (app.Environment.IsDevelopment())
+        // {
+        //     app.UseSwagger();
+        //     app.UseSwaggerUI();
+        // }
+        
+        app.UseSwagger();
+        app.UseSwaggerUI();
+        
+        
         app.UseHttpsRedirection();
 
         app.UseAuthentication();
