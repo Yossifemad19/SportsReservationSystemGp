@@ -42,8 +42,10 @@ public class Program
 
         var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
         var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-
-        if (string.IsNullOrEmpty(postgresUser) || string.IsNullOrEmpty(postgresPassword))
+        var host = builder.Environment.IsDevelopment() ? "localhost":Environment.GetEnvironmentVariable("HOST");
+        var database = Environment.GetEnvironmentVariable("POSTGRES_DB");
+        
+        if (string.IsNullOrEmpty(postgresUser) || string.IsNullOrEmpty(postgresPassword) ||string.IsNullOrEmpty(host) ||string.IsNullOrEmpty(database))
         {
             throw new Exception("Missing environment variables.");
         }
@@ -53,6 +55,8 @@ public class Program
 
 // Replace placeholders correctly
         var connectionString = rawConnectionString!
+            .Replace("${HOST}", host)
+            .Replace("${POSTGRES_DB}", database)
             .Replace("${POSTGRES_USER}", postgresUser)
             .Replace("${POSTGRES_PASSWORD}", postgresPassword);
 
