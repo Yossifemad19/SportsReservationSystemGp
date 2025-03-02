@@ -1,0 +1,54 @@
+﻿using backend.Api.DTOs;
+using backend.Api.Services;
+using backend.Core.Entities;
+using Microsoft.AspNetCore.Mvc;
+
+[Route("api/[controller]")]
+[ApiController]
+public class FacilitiesController : ControllerBase
+{
+    private readonly IFacilityService _facilityService;
+
+    public FacilitiesController(IFacilityService facilityService)
+    {
+        _facilityService = facilityService;
+    }
+
+    
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> Get(int id)
+    {
+        var facility = await _facilityService.GetFacilityById(id);
+        if (facility == null) return NotFound();
+        return Ok(facility);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] FacilityDto facilityDto)
+    {
+        var createdFacility = await _facilityService.CreateFacility(facilityDto);
+        return CreatedAtAction(nameof(Get), new { id = createdFacility.Id }, createdFacility);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] FacilityDto facilityDto)
+    {
+        if (id != facilityDto.Id) 
+            return BadRequest();
+
+        var ExistingFacility = await _facilityService.UpdateFacility(facilityDto);
+        if (!ExistingFacility) return NotFound();
+
+        return BadRequest();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var ExistingFacility = await _facilityService.DeleteFacility(id);
+        if (!ExistingFacility) return NotFound();
+
+        return BadRequest();
+    }
+}

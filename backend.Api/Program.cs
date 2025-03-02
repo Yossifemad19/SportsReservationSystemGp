@@ -39,6 +39,7 @@ public class Program
 
 
         Env.Load(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env"));
+        Console.WriteLine(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env"));
 
         var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
         var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
@@ -82,7 +83,9 @@ public class Program
 
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-        
+        builder.Services.AddScoped<IFacilityService, FacilityService>();
+
+
 
 
 

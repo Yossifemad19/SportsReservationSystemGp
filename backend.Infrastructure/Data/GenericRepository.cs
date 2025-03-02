@@ -32,4 +32,21 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         var entity= await _dbSet.Include(include).FirstOrDefaultAsync(predicate);
         return entity;
     }
+
+    public void Update(Entity entity)
+    {
+        _dbSet.Update(entity);
+    }
+
+    public void Remove(Entity entity)
+    {
+        _dbSet.Remove(entity);
+    }
+
+    public async Task<Entity?> GetByIdAsync(int id)
+    {
+        return await _dbSet.FindAsync(id);
+    }
+
 }
+
