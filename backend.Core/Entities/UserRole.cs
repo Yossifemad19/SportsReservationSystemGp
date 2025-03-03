@@ -7,5 +7,7 @@ public enum UserRole
     [EnumMember(Value = "Customer")]
     Customer,
     [EnumMember(Value = "Owner")]
-    Owner
+    Owner,
+    [EnumMember(Value = "Admin")]
+    Admin
 }

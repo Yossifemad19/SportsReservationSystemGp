@@ -42,7 +42,11 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
     {
         return await _dbSet.FindAsync(id);
     }
-    
+
+    public async Task<ICollection<Entity>> GetAllAsync()
+    {
+        return await _dbSet.ToListAsync();
+    }
     
     // // for test login
     // public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate,Expression<Func<Entity,object>> include)

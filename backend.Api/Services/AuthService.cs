@@ -51,7 +51,7 @@ public class AuthService: IAuthService
     
 
 
-    private string GetHashedPassword(string password)
+    public static string  GetHashedPassword(string password)
     {
         return BCrypt.Net.BCrypt.HashPassword(password);
     }

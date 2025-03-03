@@ -158,6 +158,15 @@ public class Program
             var context = services.GetRequiredService<AppDbContext>();
             await context.Database.MigrateAsync();
             logger.LogInformation( "database updated");
+            
+            var result = await SeedAdmin.SeedAdminData(context,AuthService.GetHashedPassword("Admin@123"));
+            if(result>0)
+                logger.LogInformation( "Successfully seeded admin data");
+            else if(result==0)
+                logger.LogInformation( "admin data seeding failed");
+            else
+                logger.LogError( "Admin data seeded");
+            
         }
         catch (Exception ex)
         {

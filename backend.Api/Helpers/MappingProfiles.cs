@@ -16,6 +16,9 @@ public class MappingProfiles: Profile
 
         CreateMap<AddressDto, Address>().ReverseMap();
         CreateMap<FacilityDto, Facility>().ReverseMap();
+
+        CreateMap<CourtDto, Court>().ReverseMap();
+        CreateMap<Sport, SportDto>();
     }
 }
 
