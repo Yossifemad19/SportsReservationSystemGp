@@ -13,6 +13,9 @@ public class MappingProfiles: Profile
         // CreateMap<FacilityOwnerDTO, OwnerProfile>()
         //     // because I'm not able to map it direct
         //     .ForPath(dest => dest.UserCredential.Email, opt => opt.MapFrom(src => src.Email));
+
+        CreateMap<AddressDto, Address>().ReverseMap();
+        CreateMap<FacilityDto, Facility>().ReverseMap();
     }
 }
 

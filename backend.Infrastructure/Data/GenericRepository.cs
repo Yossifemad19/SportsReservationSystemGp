@@ -26,16 +26,11 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         return entity;
     }
     
-    // for test login
-    public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate,Expression<Func<Entity,object>> include)
-    {
-        var entity= await _dbSet.Include(include).FirstOrDefaultAsync(predicate);
-        return entity;
-    }
+    
 
     public void Update(Entity entity)
     {
-        _dbSet.Update(entity);
+        _dbSet.Attach(entity);
     }
 
     public void Remove(Entity entity)
@@ -47,6 +42,14 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
     {
         return await _dbSet.FindAsync(id);
     }
+    
+    
+    // // for test login
+    // public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate,Expression<Func<Entity,object>> include)
+    // {
+    //     var entity= await _dbSet.Include(include).FirstOrDefaultAsync(predicate);
+    //     return entity;
+    // }
 
 }
 

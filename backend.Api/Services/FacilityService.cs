@@ -26,51 +26,49 @@ public class FacilityService : IFacilityService
     {
         var facility = await _unitOfWork.Repository<Facility>()
                                         .GetByIdAsync(id);
-
-        if (facility == null)
-            return null;
-
-        return _mapper.Map<FacilityDto>(facility);
+        
+        return facility is null?null:_mapper.Map<FacilityDto>(facility);
     }
 
-    public async Task<FacilityDto> CreateFacility(FacilityDto facilityDto)
+    public async Task<FacilityDto> CreateFacility(FacilityDto facilityDto,string ownerId)
     {
         var facility = _mapper.Map<Facility>(facilityDto);  
-
+        
+        facility.OwnerId = int.Parse(ownerId);
+        
         _unitOfWork.Repository<Facility>().Add(facility);
-        await _unitOfWork.CompleteAsync();
 
-        return _mapper.Map<FacilityDto>(facility);  
+        return await _unitOfWork.CompleteAsync()>0?_mapper.Map<FacilityDto>(facility):null;  
     }
 
-    public async Task<bool> UpdateFacility(FacilityDto facilityDto)
-    {
-        var existingFacility = await _unitOfWork.Repository<Facility>()
-                                                .GetByIdAsync(facilityDto.Id);
-
-        if (existingFacility == null)
-            return false;
-
-
-        // if you want to do The mapping manually 
-
-        existingFacility.Name = facilityDto.Name;
-
-       
-        existingFacility.Address = new Address
-        {
-            StreetAddress = facilityDto.Address.StreetAddress,
-            City = facilityDto.Address.City,
-            Latitude = facilityDto.Address.Longitude,
-            Longitude = facilityDto.Address.Longitude,
-            
-        };
-
-        _unitOfWork.Repository<Facility>().Update(existingFacility);
-        await _unitOfWork.CompleteAsync();
-
-        return true;
-    }
+    // public async Task<bool> UpdateFacility(FacilityDto facilityDto)
+    // {
+    //     var existingFacility = await _unitOfWork.Repository<Facility>()
+    //                                             .GetByIdAsync(facilityDto.Id);
+    //
+    //     if (existingFacility == null)
+    //         return false;
+    //
+    //
+    //     // if you want to do The mapping manually 
+    //
+    //     existingFacility.Name = facilityDto.Name;
+    //
+    //    
+    //     existingFacility.Address = new Address
+    //     {
+    //         StreetAddress = facilityDto.Address.StreetAddress,
+    //         City = facilityDto.Address.City,
+    //         Latitude = facilityDto.Address.Longitude,
+    //         Longitude = facilityDto.Address.Longitude,
+    //         
+    //     };
+    //
+    //     _unitOfWork.Repository<Facility>().Update(existingFacility);
+    //     await _unitOfWork.CompleteAsync();
+    //
+    //     return true;
+    // }
 
     public async Task<bool> DeleteFacility(int id)
     {
@@ -80,8 +78,8 @@ public class FacilityService : IFacilityService
             return false;
 
         _unitOfWork.Repository<Facility>().Remove(facility);
-        await _unitOfWork.CompleteAsync();
+        
 
-        return true;
+        return await _unitOfWork.CompleteAsync()>0?true:false;
     }
 }

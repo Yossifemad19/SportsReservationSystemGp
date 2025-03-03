@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Core.Entities;
 
+
 public class Sport: BaseEntity
 {
     [Required,Column(TypeName = "varchar(20)")]
