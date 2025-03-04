@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using backend.Api.DTOs;
+using backend.Api.Errors;
 using backend.Api.Services;
 using backend.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,7 @@ public class FacilitiesController : ControllerBase
     public async Task<IActionResult> Get(int id)
     {
         var facility = await _facilityService.GetFacilityById(id);
-        if (facility == null) return NotFound("facility not found");
+        if (facility == null) return NotFound(new ApiResponse(404,"facility not found"));
         return Ok(facility);
     }
 
@@ -30,15 +31,12 @@ public class FacilitiesController : ControllerBase
     [Authorize(Roles = "Owner")]
     public async Task<IActionResult> Create([FromBody] FacilityDto facilityDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-        
         var ownerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         
         var createdFacility = await _facilityService.CreateFacility(facilityDto,ownerId);
         
         return createdFacility != null ? (IActionResult)Ok(createdFacility) : 
-            BadRequest("facility could not be created");
+            BadRequest(new ApiResponse(400,"facility could not be created"));
         
         // return CreatedAtAction(nameof(Get), new { id = createdFacility.Id }, createdFacility);
     }
@@ -61,7 +59,7 @@ public class FacilitiesController : ControllerBase
     {
         var ExistingFacility = await _facilityService.DeleteFacility(id);
         
-        if (!ExistingFacility) return NotFound("facility could not be found");
+        if (!ExistingFacility) return NotFound(new ApiResponse(404,"facility could not be found"));
 
         return Ok("facility deleted");
     }

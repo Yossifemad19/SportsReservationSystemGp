@@ -1,6 +1,7 @@
 
 using System.Text;
 using backend.Api.DTOs;
+using backend.Api.Errors;
 using backend.Api.Services;
 using backend.Core.Interfaces;
 using backend.Repository.Data;
@@ -10,7 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using FluentValidation.AspNetCore;
 using backend.Api.Helpers;
+using backend.Api.Middlewares;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 
 namespace backend.Api;
@@ -38,6 +41,8 @@ public class Program
                 });
 
 
+       
+        
         Env.Load(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env"));
         Console.WriteLine(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env"));
 
@@ -95,6 +100,25 @@ public class Program
             })
             ;
         
+        builder.Services.Configure<ApiBehaviorOptions>(o =>
+            {
+                o.InvalidModelStateResponseFactory = actionContext =>
+                {
+                    var errors = actionContext.ModelState
+                        .Where(x => x.Value.Errors.Count > 0)
+                        .SelectMany(e => e.Value.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+        
+                    return new BadRequestObjectResult(new ApiValidation()
+                    {
+                        Errors = errors
+                    });
+        
+                };
+            }
+        );
+        
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -142,6 +166,8 @@ public class Program
         
         app.UseHttpsRedirection();
 
+        app.UseStatusCodePagesWithReExecute("/Errors/{0}");
+        app.UseMiddleware<ExceptionMiddleware>();
         app.UseAuthentication();
         
         app.UseAuthorization();

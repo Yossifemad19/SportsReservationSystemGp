@@ -1,4 +1,5 @@
 using backend.Api.DTOs;
+using backend.Api.Errors;
 using backend.Api.Services;
 using backend.Core.Entities;
 using Microsoft.AspNetCore.Identity.Data;
@@ -20,12 +21,9 @@ public class AdminAuthController:ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult> Login([FromBody] LoginDto loginDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-        
         var result = await _authService.Login(loginDto);
         if(String.IsNullOrEmpty(result))
-            return BadRequest("Username or password is incorrect");
+            return BadRequest(new ApiResponse(400,"Username or password is incorrect"));
         
         return Ok(result);
     }

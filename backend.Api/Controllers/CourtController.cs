@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AutoMapper;
 using backend.Api.DTOs;
+using backend.Api.Errors;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,8 @@ public class CourtController:ControllerBase
         var court = _mapper.Map<Court>(courtDto);
         
         _unitOfWork.Repository<Court>().Add(court);
-        return await _unitOfWork.CompleteAsync()>0?Ok("court add"):BadRequest("court add failed");
+        return await _unitOfWork.CompleteAsync()>0?Ok("court add"):
+            BadRequest(new ApiResponse(400,"court add failed"));
     }
 
 

@@ -38,7 +38,9 @@ public class FacilityService : IFacilityService
         
         _unitOfWork.Repository<Facility>().Add(facility);
 
-        return await _unitOfWork.CompleteAsync()>0?_mapper.Map<FacilityDto>(facility):null;  
+        var result = await _unitOfWork.CompleteAsync();
+        
+        return result>0 ? _mapper.Map<FacilityDto>(facility):null;  
     }
 
     // public async Task<bool> UpdateFacility(FacilityDto facilityDto)

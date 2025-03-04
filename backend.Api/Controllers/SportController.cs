@@ -1,5 +1,6 @@
 using AutoMapper;
 using backend.Api.DTOs;
+using backend.Api.Errors;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,7 @@ public class SportController:ControllerBase
             return BadRequest("Sport name is too long");
         
         _unitOfWork.Repository<Sport>().Add(new Sport(){Name = SportName});
-        return await _unitOfWork.CompleteAsync()>0? Ok("sport added successfully") : BadRequest("sport not added");
+        return await _unitOfWork.CompleteAsync()>0? Ok("sport added successfully") : BadRequest(new ApiResponse(400,"sport not added"));
         
     }
 
