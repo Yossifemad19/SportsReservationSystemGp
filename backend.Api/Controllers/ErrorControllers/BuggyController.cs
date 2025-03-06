@@ -33,7 +33,7 @@ public class BuggyController : ControllerBase
     {
         var product = await _context.Facilities.FindAsync(55);
 
-        var product2=product.ToString();
+        var product2 = product.ToString();
 
         return product;
     }

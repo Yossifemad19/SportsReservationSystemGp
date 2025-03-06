@@ -39,8 +39,8 @@ public class FacilityService : IFacilityService
         _unitOfWork.Repository<Facility>().Add(facility);
 
         var result = await _unitOfWork.CompleteAsync();
-        
-        return result>0 ? _mapper.Map<FacilityDto>(facility):null;  
+
+        return result > 0 ? _mapper.Map<FacilityDto>(facility) : null;
     }
 
     // public async Task<bool> UpdateFacility(FacilityDto facilityDto)
@@ -84,4 +84,12 @@ public class FacilityService : IFacilityService
 
         return await _unitOfWork.CompleteAsync()>0?true:false;
     }
+
+    public async Task<List<FacilityDto>> GetAllFacilities()
+    {
+        var facilities = await _unitOfWork.Repository<Facility>().GetAllAsync();
+
+        return _mapper.Map<List<FacilityDto>>(facilities);
+    }
+
 }

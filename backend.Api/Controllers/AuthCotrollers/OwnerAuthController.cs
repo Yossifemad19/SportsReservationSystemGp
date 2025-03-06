@@ -19,15 +19,31 @@ public class OwnerAuthController : ControllerBase
     }
 
 
+    
+
     [HttpPost("OwnerRegister")]
     public async Task<IActionResult> OwnerRegister([FromBody] RegisterDto registerDto)
     {
-        var result = await _OwnerAuthService.Register(registerDto,UserRole.Owner);
+        var token = await _OwnerAuthService.Register(registerDto, UserRole.Owner);
 
-        if (String.IsNullOrEmpty(result))
-            return BadRequest(new ApiResponse(400,"Failed to register user"));
+        if (string.IsNullOrEmpty(token))
+            return BadRequest(new ApiResponse(400, "Failed to register user"));
 
-        return Ok(result);
+        var owner = new
+        {
+            
+            FullName = registerDto.FirstName + " " + registerDto.LastName,
+            Email = registerDto.Email,
+            phoneNumber = registerDto.PhoneNumber,
+            Role = UserRole.Owner.ToString()
+        };
+
+        return Ok(new
+        {
+            message = "Registered successfully",
+            token = token,
+            owner = owner
+        });
     }
 
     [HttpPost("OwnerLogin")]
@@ -35,8 +51,14 @@ public class OwnerAuthController : ControllerBase
     {
         var result = await _OwnerAuthService.Login(loginDto);
         if (String.IsNullOrEmpty(result))
-            return BadRequest(new ApiResponse(400,"Username or password is incorrect"));
+            return BadRequest(new ApiResponse(400, "Username or password is incorrect"));
 
-        return Ok(result);
+        return Ok(new
+        { 
+        
+            message = "Logged in successfully"
+        
+        });
     }
+
 }

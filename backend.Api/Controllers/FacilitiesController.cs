@@ -17,13 +17,13 @@ public class FacilitiesController : ControllerBase
         _facilityService = facilityService;
     }
 
-    
+
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
     {
         var facility = await _facilityService.GetFacilityById(id);
-        if (facility == null) return NotFound(new ApiResponse(404,"facility not found"));
+        if (facility == null) return NotFound(new ApiResponse(404, "facility not found"));
         return Ok(facility);
     }
 
@@ -32,12 +32,12 @@ public class FacilitiesController : ControllerBase
     public async Task<IActionResult> Create([FromBody] FacilityDto facilityDto)
     {
         var ownerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        
-        var createdFacility = await _facilityService.CreateFacility(facilityDto,ownerId);
-        
-        return createdFacility != null ? (IActionResult)Ok(createdFacility) : 
-            BadRequest(new ApiResponse(400,"facility could not be created"));
-        
+
+        var createdFacility = await _facilityService.CreateFacility(facilityDto, ownerId);
+
+        return createdFacility != null ? (IActionResult)Ok(createdFacility) :
+            BadRequest(new ApiResponse(400, "facility could not be created"));
+
         // return CreatedAtAction(nameof(Get), new { id = createdFacility.Id }, createdFacility);
     }
 
@@ -58,9 +58,23 @@ public class FacilitiesController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var ExistingFacility = await _facilityService.DeleteFacility(id);
-        
-        if (!ExistingFacility) return NotFound(new ApiResponse(404,"facility could not be found"));
+
+        if (!ExistingFacility) return NotFound(new ApiResponse(404, "facility could not be found"));
 
         return Ok("facility deleted");
     }
+
+    [HttpGet("")]
+    [Authorize(Roles = "Owner")]
+    public async Task<IActionResult> GetAllFacilities()
+    {
+        var facilities = await _facilityService.GetAllFacilities();
+        if (facilities == null)
+        {
+            return NotFound(new ApiResponse(404, "No facilities found"));
+        }
+
+        return Ok(facilities);
+    }
+
 }

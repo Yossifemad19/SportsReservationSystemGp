@@ -10,4 +10,6 @@ public interface IFacilityService
     Task<FacilityDto> CreateFacility(FacilityDto FacilityDto,string ownerId);
     // Task<bool> UpdateFacility(FacilityDto FacilityDto);
     Task<bool> DeleteFacility(int id);
+
+    Task<List<FacilityDto>> GetAllFacilities();
 }

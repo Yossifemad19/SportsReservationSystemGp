@@ -21,15 +21,7 @@ public class AuthController: ControllerBase
         _authService = authService;
     }
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-    {
-        var result = await _authService.Login(loginDto);
-        if(String.IsNullOrEmpty(result))
-            return BadRequest(new ApiResponse(400,"Username or password is incorrect"));
-        
-        return Ok(result);
-    }
+    
     
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
@@ -39,11 +31,35 @@ public class AuthController: ControllerBase
         
         if(String.IsNullOrEmpty(result))
             return BadRequest(new ApiResponse(400,"Failed to register user"));
-        
-        return Ok(result);
+
+        var user = new
+        {
+
+            FullName = registerDto.FirstName + " " + registerDto.LastName,
+            Email = registerDto.Email,
+            phoneNumber = registerDto.PhoneNumber,
+            Role = UserRole.Customer.ToString()
+        };
+
+        return Ok(new
+        {
+            message = "Registered successfully",
+            user = user
+        });
     }
 
-   
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    {
+        var result = await _authService.Login(loginDto);
+        if (String.IsNullOrEmpty(result))
+            return BadRequest(new ApiResponse(400, "Username or password is incorrect"));
 
-   
+        return Ok(new 
+        {
+            message = "Logged in successfully"
+        });
+    }
+
+
 }

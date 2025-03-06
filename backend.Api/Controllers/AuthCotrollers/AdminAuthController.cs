@@ -25,6 +25,9 @@ public class AdminAuthController:ControllerBase
         if(String.IsNullOrEmpty(result))
             return BadRequest(new ApiResponse(400,"Username or password is incorrect"));
         
-        return Ok(result);
+        return Ok(new 
+        {
+            message = "Logged in successfully"
+        });
     }
 }
