@@ -44,7 +44,8 @@ public class AuthController: ControllerBase
         return Ok(new
         {
             message = "Registered successfully",
-            user = user
+            user = user,
+            token = result
         });
     }
 
@@ -57,7 +58,8 @@ public class AuthController: ControllerBase
 
         return Ok(new 
         {
-            message = "Logged in successfully"
+            message = "Logged in successfully",
+            token = result
         });
     }
 

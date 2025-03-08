@@ -4,6 +4,7 @@ namespace backend.Api.DTOs;
 
 public class CourtDto
 {
+    public int Id { get; set; }
     public string Name { get; set; }
     public int FacilityId { get; set; }
     public int SportId { get; set; }

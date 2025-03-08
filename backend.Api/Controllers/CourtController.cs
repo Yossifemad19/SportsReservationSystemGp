@@ -41,4 +41,30 @@ public class CourtController:ControllerBase
          var courts = await _unitOfWork.Repository<Court>().GetAllAsync();
          return Ok(_mapper.Map<IReadOnlyList<CourtDto>>(courts));
     }
+
+    [HttpPut]
+    public async Task<IActionResult> UpdateCourt(CourtDto courtDto)
+    {
+
+        var existingCourt = await _unitOfWork.Repository<Court>().GetByIdAsync(courtDto.Id);
+        if (existingCourt == null)
+        {
+            return NotFound(new ApiResponse(404,"Court not found"));
+        }
+
+
+        existingCourt.Name = courtDto.Name;
+        existingCourt.Capacity = courtDto.Capacity;
+        existingCourt.PricePerHour = courtDto.PricePerHour;
+        existingCourt.FacilityId = courtDto.FacilityId;
+        existingCourt.SportId = courtDto.SportId;
+
+
+
+        _unitOfWork.Repository<Court>().Update(existingCourt);
+        await _unitOfWork.CompleteAsync();
+
+        return Ok("Court updated successfully");
+    }
+
 }

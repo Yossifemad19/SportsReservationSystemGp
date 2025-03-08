@@ -11,12 +11,12 @@ namespace backend.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")]
-public class SportController:ControllerBase
+public class SportController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public SportController(IUnitOfWork unitOfWork,IMapper mapper)
+    public SportController(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -25,14 +25,14 @@ public class SportController:ControllerBase
     [HttpPost("add")]
     public async Task<IActionResult> AddSport(string SportName)
     {
-        if(string.IsNullOrEmpty(SportName))
+        if (string.IsNullOrEmpty(SportName))
             return BadRequest("Sport name is required");
-        if(SportName.Length > 20)
+        if (SportName.Length > 20)
             return BadRequest("Sport name is too long");
-        
-        _unitOfWork.Repository<Sport>().Add(new Sport(){Name = SportName});
-        return await _unitOfWork.CompleteAsync()>0? Ok("sport added successfully") : BadRequest(new ApiResponse(400,"sport not added"));
-        
+
+        _unitOfWork.Repository<Sport>().Add(new Sport() { Name = SportName });
+        return await _unitOfWork.CompleteAsync() > 0 ? Ok("sport added successfully") : BadRequest(new ApiResponse(400, "sport not added"));
+
     }
 
     [HttpGet("getAll")]
@@ -41,4 +41,25 @@ public class SportController:ControllerBase
         var sports = await _unitOfWork.Repository<Sport>().GetAllAsync();
         return Ok(_mapper.Map<IReadOnlyList<SportDto>>(sports));
     }
+
+    [HttpPut("Update")]
+    public async Task<IActionResult> UpdateSport(SportDto sportDto)
+    {
+
+        var existingSport = await _unitOfWork.Repository<Sport>().GetByIdAsync(sportDto.Id);
+        if (existingSport == null)
+        {
+            return NotFound(new ApiResponse(404,"Sport not found"));
+        }
+
+
+        existingSport.Name = sportDto.Name;
+
+
+        _unitOfWork.Repository<Sport>().Update(existingSport);
+        await _unitOfWork.CompleteAsync();
+
+        return Ok("Sport updated successfully");
+    }
 }
+

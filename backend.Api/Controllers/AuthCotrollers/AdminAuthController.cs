@@ -27,7 +27,8 @@ public class AdminAuthController:ControllerBase
         
         return Ok(new 
         {
-            message = "Logged in successfully"
+            message = "Logged in successfully",
+            token = result
         });
     }
 }

@@ -5,14 +5,15 @@ using FluentValidation;
 
 public class FacilityDtoValidator : AbstractValidator<FacilityDto>
 {
-    //public FacilityDtoValidator()
-    //{
-    //    RuleFor(x => x.Name)
-    //        .NotEmpty().WithMessage("Name is required.")
-    //        .MaximumLength(100).WithMessage("Name cannot exceed 100 characters.");
+    public FacilityDtoValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required")
+            .Length(2,10).WithMessage("Name  Must Be Between 2 and 10 Characters");
 
-    //    RuleFor(x => x.Address)
-    //        .NotNull().WithMessage("Address is required.");
-    //}
+        RuleFor(x => x.Address)
+            .NotNull().WithMessage("Address is required")
+            .SetValidator(new AddressDtoValidator());
+    }
 }
 

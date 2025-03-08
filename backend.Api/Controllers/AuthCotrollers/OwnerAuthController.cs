@@ -56,8 +56,8 @@ public class OwnerAuthController : ControllerBase
         return Ok(new
         { 
         
-            message = "Logged in successfully"
-        
+            message = "Logged in successfully",
+            token = result
         });
     }
 

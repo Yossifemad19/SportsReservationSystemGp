@@ -64,7 +64,7 @@ public class FacilitiesController : ControllerBase
         return Ok("facility deleted");
     }
 
-    [HttpGet("")]
+    [HttpGet("GetAll")]
     [Authorize(Roles = "Owner")]
     public async Task<IActionResult> GetAllFacilities()
     {
