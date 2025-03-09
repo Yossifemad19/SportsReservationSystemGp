@@ -9,7 +9,7 @@ public class UnitOfWork : IUnitOfWork
     
     private Hashtable _repositories;
     private readonly AppDbContext _context;
-
+    private IBookingRepository _bookingRepository; 
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
@@ -23,6 +23,14 @@ public class UnitOfWork : IUnitOfWork
     public void Dispose()
     {
         _context.Dispose();
+    }
+
+    public IBookingRepository BookingRepository  
+    {
+        get
+        {
+            return _bookingRepository ??= new BookingRepository(_context);
+        }
     }
 
     public IGenericRepository<T> Repository<T>() where T : BaseEntity

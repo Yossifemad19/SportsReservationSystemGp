@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace backend.Core.Entities;
 
 public class Facility:BaseEntity

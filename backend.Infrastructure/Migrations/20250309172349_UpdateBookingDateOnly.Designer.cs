@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Repository.Data;
@@ -11,9 +12,11 @@ using backend.Repository.Data;
 namespace backend.Repository.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250309172349_UpdateBookingDateOnly")]
+    partial class UpdateBookingDateOnly
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,18 +99,12 @@ namespace backend.Repository.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("integer");
 
-                    b.Property<TimeSpan>("ClosingTime")
-                        .HasColumnType("interval");
-
                     b.Property<int>("FacilityId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<TimeSpan>("OpeningTime")
-                        .HasColumnType("interval");
 
                     b.Property<decimal>("PricePerHour")
                         .HasColumnType("numeric");
@@ -135,9 +132,15 @@ namespace backend.Repository.Migrations
                     b.Property<int>("AddressId")
                         .HasColumnType("integer");
 
+                    b.Property<TimeSpan>("ClosingTime")
+                        .HasColumnType("interval");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<TimeSpan>("OpeningTime")
+                        .HasColumnType("interval");
 
                     b.Property<int>("OwnerId")
                         .HasColumnType("integer");
