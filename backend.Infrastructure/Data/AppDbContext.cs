@@ -30,10 +30,48 @@ public class AppDbContext: DbContext
             .WithMany(c=>c.Bookings).HasForeignKey(b=>b.CourtId);
         
         modelBuilder.Entity<Booking>().Property(b=>b.status).HasConversion(os => os.ToString(), os => (BookingStatus)Enum.Parse(typeof(BookingStatus),os));
+        
+        modelBuilder.Entity<Owner>().HasMany(o => o.Facilities)
+            .WithOne(f => f.Owner)
+            .HasForeignKey(f => f.OwnerId);
+
+        modelBuilder.Entity<User>()
+            .HasIndex(a => a.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .Property(a => a.UserRole)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<Admin>()
+            .HasIndex(a => a.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<Admin>()
+            .Property(a => a.UserRole)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<Owner>()
+            .HasIndex(a => a.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<Admin>()
+            .Property(a => a.UserRole)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<Owner>()
+            .Property(a => a.UserRole)
+            .HasConversion<string>();
+
+       
+
 
     }
-    
-    public DbSet<User> User { get; set; }
+
+    public DbSet<User> Users { get; set; }
+    public DbSet<Owner> Owners { get; set; }
+    public DbSet<Admin> Admins { get; set; }
+
     public DbSet<Address> Addresses { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<Court> Courts { get; set; }

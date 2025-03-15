@@ -12,5 +12,5 @@ public class User : BaseEntity
     public DateTime CreatedAt { get; set; }
 
     public ICollection<Booking> Bookings { get; set; }
-    public ICollection<Facility> Facilities { get; set; }
+
 }

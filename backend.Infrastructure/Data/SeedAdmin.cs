@@ -1,26 +1,32 @@
 using backend.Core.Entities;
+using backend.Core.Interfaces;
 
 namespace backend.Repository.Data;
 
 public class SeedAdmin
 {
-    public static async Task<int> SeedAdminData(AppDbContext context,string HashPassword)
+    public static async Task<int> SeedAdminData(IUnitOfWork unitOfWork, string hashPassword)
     {
-        if (!context.User.Any(u => u.UserRole == UserRole.Admin))
+        var adminRepository = unitOfWork.Repository<Admin>();
+
+        var existingAdmin = await adminRepository.FindAsync(u => u.UserRole == UserRole.Admin);
+
+        if (existingAdmin == null) 
         {
-            var adminUser = new User
+            var adminUser = new Admin
             {
                 FirstName = "admin",
                 LastName = "admin",
-                PasswordHash = HashPassword,
+                PasswordHash = hashPassword,
                 UserRole = UserRole.Admin,
                 Email = "admin@gmail.com",
             };
-        
-            context.User.Add(adminUser);
-            
-            return await context.SaveChangesAsync();
+
+            adminRepository.Add(adminUser);
+
+            return await unitOfWork.CompleteAsync();
         }
+
         return -1;
     }
 }

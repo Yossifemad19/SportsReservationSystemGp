@@ -27,12 +27,11 @@ public class UserProfileConfiguration: IEntityTypeConfiguration<User>
         
         builder.Property(u=>u.UserRole).HasConversion(os => os.ToString(), os => (UserRole)Enum.Parse(typeof(UserRole),os));
 
-        builder.HasIndex(x=>x.UserRole).HasFilter($"UserRole='{UserRole.Admin}'").IsUnique();
+
         // Relations
         builder.HasMany(x=>x.Bookings).WithOne(b=>b.User)
             .HasForeignKey(B=>B.UserId);
 
-        builder.HasMany(x => x.Facilities).WithOne(f => f.Owner)
-            .HasForeignKey(f => f.OwnerId);
+
     }
 }

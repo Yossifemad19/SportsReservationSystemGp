@@ -22,19 +22,19 @@ public class OwnerAuthController : ControllerBase
     
 
     [HttpPost("OwnerRegister")]
-    public async Task<IActionResult> OwnerRegister([FromBody] RegisterDto registerDto)
+    public async Task<IActionResult> OwnerRegister([FromBody] OwnerRegisterDto ownerRegisterDto)
     {
-        var token = await _OwnerAuthService.Register(registerDto, UserRole.Owner);
+        var token = await _OwnerAuthService.OwnerRegister(ownerRegisterDto, UserRole.Owner);
 
         if (string.IsNullOrEmpty(token))
-            return BadRequest(new ApiResponse(400, "Failed to register user"));
+            return BadRequest(new ApiResponse(400, "Failed to register owner"));
 
         var owner = new
         {
             
-            FullName = registerDto.FirstName + " " + registerDto.LastName,
-            Email = registerDto.Email,
-            phoneNumber = registerDto.PhoneNumber,
+            FullName = ownerRegisterDto.FirstName + " " + ownerRegisterDto.LastName,
+            Email = ownerRegisterDto.Email,
+            phoneNumber = ownerRegisterDto.PhoneNumber,
             Role = UserRole.Owner.ToString()
         };
 
@@ -47,9 +47,9 @@ public class OwnerAuthController : ControllerBase
     }
 
     [HttpPost("OwnerLogin")]
-    public async Task<IActionResult> OwnerLogin([FromBody] LoginDto loginDto)
+    public async Task<IActionResult> OwnerLogin([FromBody] OwnerLoginDto ownerLoginDto)
     {
-        var result = await _OwnerAuthService.Login(loginDto);
+        var result = await _OwnerAuthService.OwnerLogin(ownerLoginDto);
         if (String.IsNullOrEmpty(result))
             return BadRequest(new ApiResponse(400, "Username or password is incorrect"));
 

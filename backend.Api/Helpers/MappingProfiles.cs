@@ -9,7 +9,7 @@ public class MappingProfiles: Profile
     public MappingProfiles()
     {
         CreateMap<RegisterDto, User>();
-            
+        CreateMap<OwnerRegisterDto, Owner>();
         // CreateMap<FacilityOwnerDTO, OwnerProfile>()
         //     // because I'm not able to map it direct
         //     .ForPath(dest => dest.UserCredential.Email, opt => opt.MapFrom(src => src.Email));

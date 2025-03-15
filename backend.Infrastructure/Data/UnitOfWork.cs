@@ -7,9 +7,9 @@ namespace backend.Repository.Data;
 public class UnitOfWork : IUnitOfWork
 {
     
-    private Hashtable _repositories;
+    private  Hashtable _repositories;
     private readonly AppDbContext _context;
-    private IBookingRepository _bookingRepository; 
+    private  IBookingRepository _bookingRepository; 
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
