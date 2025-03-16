@@ -37,15 +37,22 @@ public class AuthService: IAuthService
         return null;
     }
 
-    public async Task<string> Login(LoginDto loginDto)
+    public async Task<ResponseDto> Login(LoginDto loginDto)
     {
         var user = await _unitOfWork.Repository<User>().FindAsync(x => x.Email == loginDto.Email);
         if (user != null && ValidatePassword(loginDto.Password, user.PasswordHash))
         {
             var token = _tokenService.GenerateToken(user);
-            return token;
+            return new ResponseDto
+            {
+                Name = user.FirstName + " " + user.LastName,
+                Email = user.Email,
+                Token = token,
+                Role = user.UserRole.ToString(),
+                Message = "Logged in successfully"
+            };
         }
-        return null;
+        return new ResponseDto { Message = "Invalid email or password" };
     }
 
     
@@ -68,24 +75,36 @@ public class AuthService: IAuthService
     }
 
 
-    public async Task<string> OwnerLogin(OwnerLoginDto ownerLoginDto)
+    public async Task<ResponseDto> OwnerLogin(OwnerLoginDto ownerLoginDto)
     {
         var owner = await _unitOfWork.Repository<Owner>().FindAsync(x => x.Email == ownerLoginDto.Email);
 
+        if (owner == null)
+        {
+            return new ResponseDto { Message = "Invalid email or password" };
+        }
+
         if (!owner.IsApproved)
         {
-            return ("Your account has not been approved yet");
-            //throw new UnauthorizedAccessException
+            return new ResponseDto { Message = "Your account has not been approved yet" };
         }
 
-        if (owner != null && ValidatePassword(ownerLoginDto.Password, owner.PasswordHash))
+        if (ValidatePassword(ownerLoginDto.Password, owner.PasswordHash))
         {
             var token = _tokenService.GenerateToken(owner);
-            return token;
+            return new ResponseDto
+            {
+                Name = owner.FirstName + " " + owner.LastName,
+                Email = owner.Email,
+                Token = token,
+                Role = owner.UserRole.ToString(),
+                Message = "Logged in successfully"
+            };
         }
 
-        return null; 
+        return new ResponseDto { Message = "Invalid email or password" };
     }
+
 
 
 

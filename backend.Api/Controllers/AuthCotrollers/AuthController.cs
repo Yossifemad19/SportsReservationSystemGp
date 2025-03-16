@@ -53,13 +53,12 @@ public class AuthController: ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
         var result = await _authService.Login(loginDto);
-        if (String.IsNullOrEmpty(result))
+        if (result == null)
             return BadRequest(new ApiResponse(400, "Username or password is incorrect"));
 
         return Ok(new 
         {
-            message = "Logged in successfully",
-            token = result
+            Data = result
         });
     }
 

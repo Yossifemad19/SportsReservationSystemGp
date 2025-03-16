@@ -6,7 +6,7 @@ namespace backend.Api.Services;
 
 public interface IAdminService
 {
-    Task<string> AdminLogin(AdminLoginDto adminLoginDto);
+    Task<ResponseDto> AdminLogin(AdminLoginDto adminLoginDto);
     Task<bool> ApproveOwner(int ownerId);
     Task<List<RegisterDto>> GetAllUsers();
     

@@ -23,13 +23,12 @@ public class AdminAuthController:ControllerBase
     public async Task<ActionResult> AdminLogin([FromBody] AdminLoginDto adminLoginDto)
     {
         var result = await _adminService.AdminLogin(adminLoginDto);
-        if(String.IsNullOrEmpty(result))
+        if(result == null)
             return BadRequest(new ApiResponse(400,"Username or password is incorrect"));
         
         return Ok(new 
         {
-            message = "Logged in successfully",
-            token = result
+            Data = result
         });
     }
 

@@ -40,17 +40,27 @@ public class AdminService : IAdminService
     }
 
 
-    public async Task<string> AdminLogin(AdminLoginDto adminLoginDto)
+    public async Task<ResponseDto> AdminLogin(AdminLoginDto adminLoginDto)
     {
         var admin = await _unitOfWork.Repository<Admin>().FindAsync(x => x.Email == adminLoginDto.Email);
 
         if (admin != null && ValidatePassword(adminLoginDto.Password, admin.PasswordHash))
         {
-            return _tokenService.GenerateToken(admin);
-        }
 
-        return null;
+            var token = _tokenService.GenerateToken(admin);
+
+            return new ResponseDto
+            {
+                Name = admin.FirstName + " " + admin.LastName,
+                Email = admin.Email,
+                Token = token,
+                Role = admin.UserRole.ToString(),
+                Message = "Logged in successfully"
+            };
+        }
+        return new ResponseDto { Message = "Invalid email or password" };
     }
+
 
     public async Task<List<OwnerRegisterDto>> GetAllOwners()
     {
