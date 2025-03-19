@@ -87,6 +87,21 @@ public class AdminService : IAdminService
         }).ToList();
     }
 
+    public async Task<IEnumerable<UnApprovedOwnerDto>> GetAllUnApprovedOwners()
+    {
+        var unapprovedOwners = await _unitOfWork.Repository<Owner>().GetAllAsync();
+
+        return unapprovedOwners.Where(o => !o.IsApproved) 
+            .Select(o => new UnApprovedOwnerDto
+            {
+                FirstName = o.FirstName,
+                LastName = o.LastName,  
+                Email = o.Email,
+                IsApproved = o.IsApproved
+            });
+    }
+
+
     public static string GetHashedPassword(string password)
     {
         return BCrypt.Net.BCrypt.HashPassword(password);

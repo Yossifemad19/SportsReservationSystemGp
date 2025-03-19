@@ -13,5 +13,6 @@ public interface IAdminService
     Task<List<OwnerRegisterDto>> GetAllOwners();
     
     Task<bool> RejectOwner(int ownerId);
+    Task<IEnumerable<UnApprovedOwnerDto>> GetAllUnApprovedOwners();
 }
 

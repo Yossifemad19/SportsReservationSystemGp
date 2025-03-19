@@ -67,4 +67,21 @@ public class CourtController:ControllerBase
         return Ok("Court updated successfully");
     }
 
+    [HttpGet("GetById")]
+    public async Task<IActionResult> GetCourtById(int id)
+    {
+        var court = await _unitOfWork.Repository<Court>().GetByIdAsync(id);
+        if (court == null)
+        {
+            return NotFound(new ApiResponse(404, "Court not found"));
+        }
+
+        return Ok(court);
+    }
+
 }
+
+    
+ 
+
+    

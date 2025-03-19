@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using backend.Api.DTOs;
 using backend.Api.Errors;
 using backend.Api.Services;
@@ -71,5 +72,12 @@ public class AdminAuthController:ControllerBase
 
         return Ok(new { message = "Owner rejected successfully" });
     }
+    [HttpGet("unapprovedOwners")]
+    public async Task<IActionResult> GetUnapprovedOwners()
+    {
+        var unapprovedOwners = await _adminService.GetAllUnApprovedOwners();
+        return Ok(unapprovedOwners);
+    }
 
 }
+
