@@ -22,7 +22,7 @@ public class CourtController:ControllerBase
         _mapper = mapper;
     }
 
-    [Authorize(Roles = "Owner")]
+    //[Authorize(Roles = "Owner")]
     [HttpPost("add")]
     public async Task<IActionResult> AddCourt(CourtDto courtDto)
     {

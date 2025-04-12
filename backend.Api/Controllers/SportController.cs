@@ -10,7 +10,7 @@ namespace backend.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
+//[Authorize(Roles = "Admin")]
 public class SportController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;

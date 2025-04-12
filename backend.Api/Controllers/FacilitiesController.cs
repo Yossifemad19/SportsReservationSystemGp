@@ -28,7 +28,7 @@ public class FacilitiesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Owner")]
+    //[Authorize(Roles = "Owner")]
     public async Task<IActionResult> Create([FromBody] FacilityDto facilityDto)
     {
         var ownerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -54,7 +54,7 @@ public class FacilitiesController : ControllerBase
     // }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Owner")]
+    //[Authorize(Roles = "Owner")]
     public async Task<IActionResult> Delete(int id)
     {
         var ExistingFacility = await _facilityService.DeleteFacility(id);
@@ -65,7 +65,7 @@ public class FacilitiesController : ControllerBase
     }
 
     [HttpGet("GetAll")]
-    [Authorize(Roles = "Owner")]
+    //[Authorize(Roles = "Owner")]
     public async Task<IActionResult> GetAllFacilities()
     {
         var facilities = await _facilityService.GetAllFacilities();
