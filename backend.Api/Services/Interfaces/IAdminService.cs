@@ -8,9 +8,9 @@ public interface IAdminService
 {
     Task<ResponseDto> AdminLogin(AdminLoginDto adminLoginDto);
     Task<bool> ApproveOwner(int ownerId);
-    Task<List<RegisterDto>> GetAllUsers();
+    Task<List<GetAllResponse>> GetAllUsers();
     
-    Task<List<OwnerRegisterDto>> GetAllOwners();
+    Task<List<GetAllResponse>> GetAllOwners();
     
     Task<bool> RejectOwner(int ownerId);
     Task<IEnumerable<UnApprovedOwnerDto>> GetAllUnApprovedOwners();

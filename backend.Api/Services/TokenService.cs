@@ -51,6 +51,8 @@ public class TokenService:ITokenService
         var claims = new[]
         {
              new Claim(ClaimTypes.NameIdentifier, owner.Id.ToString()),
+             new Claim(ClaimTypes.Email, owner.Email),
+            new Claim(ClaimTypes.Role,owner.UserRole.ToString()),
 
          };
 

@@ -30,18 +30,40 @@ public class FacilityService : IFacilityService
         return facility is null?null:_mapper.Map<FacilityDto>(facility);
     }
 
-    public async Task<FacilityDto> CreateFacility(FacilityDto facilityDto,string ownerId)
+    public async Task<FacilityResponseDto> CreateFacility(FacilityDto facilityDto, string ownerId)
+{
+    if (facilityDto.Address == null)
     {
-        var facility = _mapper.Map<Facility>(facilityDto);  
-        
-        facility.OwnerId = int.Parse(ownerId);
-        
-        _unitOfWork.Repository<Facility>().Add(facility);
-
-        var result = await _unitOfWork.CompleteAsync();
-
-        return result > 0 ? _mapper.Map<FacilityDto>(facility) : null;
+        return new FacilityResponseDto { Message = "Address is required" };
     }
+
+    decimal latitude = facilityDto.Address.Latitude;
+    decimal longitude = facilityDto.Address.Longitude;
+
+    if (!IsWithinCairo(latitude, longitude))
+    {
+        return new FacilityResponseDto { Message = "Facility location must be inside Cairo" };
+    }
+
+    var facility = _mapper.Map<Facility>(facilityDto);
+    facility.OwnerId = int.Parse(ownerId);
+
+    _unitOfWork.Repository<Facility>().Add(facility);
+    var result = await _unitOfWork.CompleteAsync();
+
+    return result > 0 
+        ? new FacilityResponseDto { Message = "Facility created successfully.", Data = _mapper.Map<FacilityDto>(facility) } 
+        : new FacilityResponseDto { Message = "Facility could not be created." };
+}
+
+
+    private bool IsWithinCairo(decimal latitude, decimal longitude)
+    {
+        return latitude >= 29.8m && latitude <= 30.2m &&
+               longitude >= 31.1m && longitude <= 31.5m;
+    }
+
+
 
     // public async Task<bool> UpdateFacility(FacilityDto facilityDto)
     // {

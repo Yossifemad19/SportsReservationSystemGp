@@ -62,28 +62,33 @@ public class AdminService : IAdminService
     }
 
 
-    public async Task<List<OwnerRegisterDto>> GetAllOwners()
+    public async Task<List<GetAllResponse>> GetAllOwners()
     {
-        var users = await _unitOfWork.Repository<Owner>().GetAllAsync();
-        return users.Select(owner => new OwnerRegisterDto
+        var owners = await _unitOfWork.Repository<Owner>().GetAllAsync();
+        return owners.Select( owner => new GetAllResponse
         {
+            Id = owner.Id,
             FirstName = owner.FirstName,
             LastName = owner.LastName,
-            Email = owner.Email
+            Email = owner.Email,
+            PhoneNumber = owner.PhoneNumber,
+
 
         }).ToList();
     }
 
-    public async Task<List<RegisterDto>> GetAllUsers()
+    public async Task<List<GetAllResponse>> GetAllUsers()
     {
         var users = await _unitOfWork.Repository<User>().GetAllAsync();
-        return users.Select(u => new RegisterDto
+        return users.Select(user => new GetAllResponse
         {
-            
-            FirstName = u.FirstName,
-            LastName = u.LastName,
-            Email = u.Email
-            
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+
+
         }).ToList();
     }
 
