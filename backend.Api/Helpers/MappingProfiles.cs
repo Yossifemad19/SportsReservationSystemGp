@@ -15,7 +15,9 @@ public class MappingProfiles: Profile
         //     .ForPath(dest => dest.UserCredential.Email, opt => opt.MapFrom(src => src.Email));
 
         CreateMap<AddressDto, Address>().ReverseMap();
-        CreateMap<FacilityDto, Facility>().ReverseMap();
+        CreateMap<Facility, FacilityDto>()
+            .ForMember(f => f.ImageUrl, f => f.MapFrom<FacilityImageUrlResolver>());
+        CreateMap<FacilityDto, Facility>();
 
         CreateMap<CourtDto, Court>().ReverseMap();
         CreateMap<Sport, SportDto>();

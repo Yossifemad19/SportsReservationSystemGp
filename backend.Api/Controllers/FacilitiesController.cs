@@ -11,10 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 public class FacilitiesController : ControllerBase
 {
     private readonly IFacilityService _facilityService;
+    private readonly IWebHostEnvironment _env;
 
-    public FacilitiesController(IFacilityService facilityService)
+    public FacilitiesController(IFacilityService facilityService,IWebHostEnvironment env)
     {
         _facilityService = facilityService;
+        _env = env;
     }
 
 
@@ -28,9 +30,12 @@ public class FacilitiesController : ControllerBase
     }
 
     [HttpPost]
-    //[Authorize(Roles = "Owner")]
-    public async Task<IActionResult> Create([FromBody] FacilityDto facilityDto)
+    [Authorize(Roles = "Owner")]
+    public async Task<IActionResult> Create([FromForm] FacilityDto facilityDto)
     {
+
+        
+        
         var ownerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
         var createdFacility = await _facilityService.CreateFacility(facilityDto, ownerId);
