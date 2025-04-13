@@ -184,7 +184,7 @@ public class Program
         
         
         app.UseHttpsRedirection();
-
+        app.UseStaticFiles();
         app.UseStatusCodePagesWithReExecute("/Errors/{0}");
         app.UseMiddleware<ExceptionMiddleware>();
         app.UseAuthentication();

@@ -13,13 +13,14 @@ public class FacilityService : IFacilityService
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    private readonly IMapper _mapper;   
+    private readonly IMapper _mapper;
+    private readonly IWebHostEnvironment _env;
 
-    public FacilityService(IUnitOfWork unitOfWork, IMapper mapper)
+    public FacilityService(IUnitOfWork unitOfWork, IMapper mapper,IWebHostEnvironment env)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
-
+        _env = env;
     }
 
     public async Task<FacilityDto?> GetFacilityById(int id)
@@ -45,9 +46,23 @@ public class FacilityService : IFacilityService
         return new FacilityResponseDto { Message = "Facility location must be inside Cairo" };
     }
 
+    var imagesFolder = Path.Combine(_env.WebRootPath,"images/facilities");
+    if (!Directory.Exists(imagesFolder)) 
+        Directory.CreateDirectory(imagesFolder);
+    
+    var imageFile = $"{Guid.NewGuid()}-{facilityDto.Image.FileName}";
+    var relativePath = Path.Combine("images/facilities", imageFile);
+    var filePath = Path.Combine(imagesFolder, imageFile);
+
+    using(var fileStream =new FileStream(filePath, FileMode.Create))
+    {
+        await facilityDto.Image.CopyToAsync(fileStream);
+    }
+
+    
     var facility = _mapper.Map<Facility>(facilityDto);
     facility.OwnerId = int.Parse(ownerId);
-
+    facility.ImageUrl = relativePath;
     _unitOfWork.Repository<Facility>().Add(facility);
     var result = await _unitOfWork.CompleteAsync();
 
