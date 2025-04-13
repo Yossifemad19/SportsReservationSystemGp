@@ -15,6 +15,7 @@ using backend.Api.Middlewares;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Logging;
 
 namespace backend.Api;
 
@@ -206,23 +207,61 @@ public class Program
             logger.LogInformation("Database updated");
 
             var unitOfWork = services.GetRequiredService<IUnitOfWork>();
-            var result = await SeedAdmin.SeedAdminData(unitOfWork, AuthService.GetHashedPassword("Admin@123"));
 
-            if (result > 0)
+            // Seed Admin Data
+            var adminResult = await SeedAdmin.SeedAdminData(unitOfWork, AuthService.GetHashedPassword("Admin@123"));
+            if (adminResult > 0)
                 logger.LogInformation("Successfully seeded admin data");
-            else if (result == 0)
+            else if (adminResult == 0)
                 logger.LogInformation("Admin data seeding failed");
             else
                 logger.LogError("Admin data was not seeded");
 
+            // Seed Owners Data 
+            var ownerPasswordHash = AuthService.GetHashedPassword("Owner@123");
+            var ownerResult = await SeedOwners.SeedOwnersData(unitOfWork, ownerPasswordHash);
+
+            if (ownerResult > 0)
+                logger.LogInformation("Successfully seeded owners data");
+            else if (ownerResult == 0)
+                logger.LogInformation("Owners data seeding failed");
+            else
+                logger.LogError("Owners data was not seeded");
+
+            // Seed Facilities Data
+            var facilitiesResult = await SeedFacilities.SeedFacilitiesData(unitOfWork);
+            if (facilitiesResult > 0)
+                logger.LogInformation("Successfully seeded owners data");
+            else if (facilitiesResult == 0)
+                logger.LogInformation("Owners data seeding failed");
+            else
+                logger.LogError("Owners data was not seeded");
+            // seed sports data
+            var sportResult = await SeedSports.SeedSportsData(unitOfWork);
+            if (sportResult > 0)
+                logger.LogInformation("Successfully seeded sports data");
+            else if (sportResult == 0)
+                logger.LogInformation("Sports already seeded");
+            else
+                logger.LogError("Error occurred while seeding sports");
+
+
+            var courtResult = await SeedCourts.SeedCourtsData(unitOfWork);
+            if (courtResult > 0)
+                logger.LogInformation("Successfully seeded courts data");
+            else if (courtResult == 0)
+                logger.LogInformation("Courts already seeded");
+            else
+                logger.LogError("Error occurred while seeding courts");
+
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred during migration");
+            logger.LogError(ex, "An error occurred during migration and seeding");
         }
 
+       
 
-
-        app.Run();
+    app.Run();
     }
 }
