@@ -52,7 +52,7 @@ public class TokenService:ITokenService
         {
              new Claim(ClaimTypes.NameIdentifier, owner.Id.ToString()),
              new Claim(ClaimTypes.Email, owner.Email),
-            new Claim(ClaimTypes.Role,owner.UserRole.ToString()),
+             new Claim(ClaimTypes.Role,owner.UserRole.ToString()),
 
          };
 
@@ -73,6 +73,8 @@ public string GenerateToken(Admin admin)
         var claims = new[]
         {
              new Claim(ClaimTypes.NameIdentifier, admin.Id.ToString()),
+             new Claim(ClaimTypes.Email, admin.Email),
+             new Claim(ClaimTypes.Role,admin.UserRole.ToString()),
 
          };
 

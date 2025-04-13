@@ -109,7 +109,7 @@ public class FacilityService : IFacilityService
 
     public async Task<List<FacilityDto>> GetAllFacilities()
     {
-        var facilities = await _unitOfWork.Repository<Facility>().GetAllAsync();
+        var facilities = await _unitOfWork.Repository<Facility>().GetAllIncludingAsync(f => f.Address); 
 
         return _mapper.Map<List<FacilityDto>>(facilities);
     }

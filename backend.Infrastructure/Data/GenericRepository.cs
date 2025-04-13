@@ -47,7 +47,19 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
     {
         return await _dbSet.ToListAsync();
     }
-    
+
+    public async Task<IEnumerable<Entity>> GetAllIncludingAsync(params Expression<Func<Entity, object>>[] includeProperties)
+    {
+        IQueryable<Entity> query = _dbSet;
+        foreach (var includeProperty in includeProperties)
+        {
+            query = query.Include(includeProperty);
+        }
+
+        return await query.ToListAsync();
+    }
+
+
     // // for test login
     // public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate,Expression<Func<Entity,object>> include)
     // {

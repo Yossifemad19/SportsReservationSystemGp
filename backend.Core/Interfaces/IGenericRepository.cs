@@ -13,7 +13,7 @@ public interface IGenericRepository<T> where T : BaseEntity
     
     Task<T> FindAsync(Expression<Func<T, bool>> predicate);
     // Task<T> FindAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> include);
-
+    Task<IEnumerable<T>> GetAllIncludingAsync(params Expression<Func<T, object>>[] includeProperties);
     Task<T?> GetByIdAsync(int id);
 
     Task<ICollection<T>> GetAllAsync();
