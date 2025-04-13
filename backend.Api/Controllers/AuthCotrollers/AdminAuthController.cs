@@ -79,5 +79,20 @@ public class AdminAuthController:ControllerBase
         return Ok(unapprovedOwners);
     }
 
+
+    [HttpGet("GetOwnerById")]
+    public async Task<IActionResult> GetOwnerById(int id)
+    {
+        var owners = await _adminService.GetOwnerById(id);
+        return Ok(owners);
+    }
+
+    [HttpGet("GetUserById")]
+    public async Task<IActionResult> GetUserById(int id)
+    {
+        var users = await _adminService.GetUserById(id);
+        return Ok(users);
+    }
+
 }
 

@@ -107,6 +107,52 @@ public class AdminService : IAdminService
     }
 
 
+    public async Task<GetAllResponse> GetOwnerById(int id)
+    {
+        var owner = await _unitOfWork.Repository<Owner>()
+                                        .GetByIdAsync(id);
+
+        if (owner == null)
+        {
+            throw new Exception($"Owner with id {id} not found.");
+        }
+
+
+        return new GetAllResponse
+        {
+            Id = owner.Id,
+            FirstName = owner.FirstName,
+            LastName = owner.LastName,
+            Email = owner.Email,
+            PhoneNumber = owner.PhoneNumber,
+
+
+        };
+    }
+
+    public async Task<GetAllResponse> GetUserById(int id)
+    {
+        var user = await _unitOfWork.Repository<User>()
+                                        .GetByIdAsync(id);
+
+        if (user == null)
+        {
+            throw new Exception($"User with id {id} not found.");
+        }
+
+
+        return new GetAllResponse
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+
+
+        };
+    }
+
     public static string GetHashedPassword(string password)
     {
         return BCrypt.Net.BCrypt.HashPassword(password);

@@ -11,7 +11,8 @@ public interface IAdminService
     Task<List<GetAllResponse>> GetAllUsers();
     
     Task<List<GetAllResponse>> GetAllOwners();
-    
+    public Task<GetAllResponse> GetOwnerById(int id);
+    public Task<GetAllResponse> GetUserById(int id);
     Task<bool> RejectOwner(int ownerId);
     Task<IEnumerable<UnApprovedOwnerDto>> GetAllUnApprovedOwners();
 }
