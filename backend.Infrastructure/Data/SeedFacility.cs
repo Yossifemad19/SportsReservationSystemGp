@@ -40,6 +40,10 @@ public static class SeedFacilities
             {
                 Name = "Facility 1",
                 OwnerId = ownersList[0].Id,  
+                ImageUrl = "images/facilities/400d0b97-5b45-4c74-8c5e-3487a48a2f61-download (2).jpeg",
+                OpeningTime = new TimeSpan(8,0,0),
+                ClosingTime = new TimeSpan(22,0,0),
+                
                 Address = new Address
                 {
                     StreetAddress = "Lebanon St",
@@ -52,6 +56,9 @@ public static class SeedFacilities
             {
                 Name = "Facility 2",
                 OwnerId = ownersList[1].Id,  
+                ImageUrl = "images/facilities/400d0b97-5b45-4c74-8c5e-3487a48a2f61-download (2).jpeg",
+                OpeningTime = new TimeSpan(8,0,0),
+                ClosingTime = new TimeSpan(22,0,0),
                 Address = new Address
                 {
                     StreetAddress = "Tahrir St",
@@ -64,6 +71,7 @@ public static class SeedFacilities
             {
                 Name = "Facility 3",
                 OwnerId = ownersList[0].Id,  
+                ImageUrl = "images/facilities/400d0b97-5b45-4c74-8c5e-3487a48a2f61-download (2).jpeg",
                 Address = new Address
                 {
                     StreetAddress = "El Nasr St",
@@ -76,6 +84,9 @@ public static class SeedFacilities
             {
                 Name = "Facility 4",
                 OwnerId = ownersList[1].Id,  
+                ImageUrl = "images/facilities/400d0b97-5b45-4c74-8c5e-3487a48a2f61-download (2).jpeg",
+                OpeningTime = new TimeSpan(8,0,0),
+                ClosingTime = new TimeSpan(22,0,0),
                 Address = new Address
                 {
                     StreetAddress = "Ahmed Oraby St",
@@ -89,6 +100,9 @@ public static class SeedFacilities
             {
                 Name = "Facility 5",
                 OwnerId = ownersList[0].Id,  
+                ImageUrl = "images/facilities/400d0b97-5b45-4c74-8c5e-3487a48a2f61-download (2).jpeg",
+                OpeningTime = new TimeSpan(8,0,0),
+                ClosingTime = new TimeSpan(22,0,0),
                 Address = new Address
                 {
                     StreetAddress = "Dokki St",
