@@ -40,7 +40,7 @@ public class AdminService : IAdminService
     }
 
 
-    public async Task<ResponseDto> AdminLogin(AdminLoginDto adminLoginDto)
+    public async Task<UserResponseDto> AdminLogin(AdminLoginDto adminLoginDto)
     {
         var admin = await _unitOfWork.Repository<Admin>().FindAsync(x => x.Email == adminLoginDto.Email);
 
@@ -49,7 +49,7 @@ public class AdminService : IAdminService
 
             var token = _tokenService.GenerateToken(admin);
 
-            return new ResponseDto
+            return new UserResponseDto
             {
                 Name = admin.FirstName + " " + admin.LastName,
                 Email = admin.Email,
@@ -58,7 +58,7 @@ public class AdminService : IAdminService
                 Message = "Logged in successfully"
             };
         }
-        return new ResponseDto { Message = "Invalid email or password" };
+        return new UserResponseDto { Message = "Invalid email or password" };
     }
 
 

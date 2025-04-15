@@ -37,14 +37,15 @@ public class AuthService: IAuthService
         return null;
     }
 
-    public async Task<ResponseDto> Login(LoginDto loginDto)
+    public async Task<UserResponseDto> Login(LoginDto loginDto)
     {
         var user = await _unitOfWork.Repository<User>().FindAsync(x => x.Email == loginDto.Email);
         if (user != null && ValidatePassword(loginDto.Password, user.PasswordHash))
         {
             var token = _tokenService.GenerateToken(user);
-            return new ResponseDto
+            return new UserResponseDto
             {
+                Id = user.Id,
                 Name = user.FirstName + " " + user.LastName,
                 Email = user.Email,
                 Token = token,
@@ -52,7 +53,7 @@ public class AuthService: IAuthService
                 Message = "Logged in successfully"
             };
         }
-        return new ResponseDto { Message = "Invalid email or password" };
+        return null;
     }
 
     
@@ -75,34 +76,36 @@ public class AuthService: IAuthService
     }
 
 
-    public async Task<ResponseDto> OwnerLogin(OwnerLoginDto ownerLoginDto)
+    public async Task<OwnerResponseDto> OwnerLogin(OwnerLoginDto ownerLoginDto)
     {
         var owner = await _unitOfWork.Repository<Owner>().FindAsync(x => x.Email == ownerLoginDto.Email);
 
         if (owner == null)
         {
-            return new ResponseDto { Message = "Invalid email or password" };
+            return null;
         }
 
         if (!owner.IsApproved)
         {
-            return new ResponseDto { Message = "Your account has not been approved yet" };
+            return new OwnerResponseDto { Message = "Your account has not been approved yet" };
         }
 
         if (ValidatePassword(ownerLoginDto.Password, owner.PasswordHash))
         {
             var token = _tokenService.GenerateToken(owner);
-            return new ResponseDto
+            return new OwnerResponseDto
             {
+                Id = owner.Id,
                 Name = owner.FirstName + " " + owner.LastName,
                 Email = owner.Email,
                 Token = token,
                 Role = owner.UserRole.ToString(),
+                IsApproved = owner.IsApproved.ToString(),
                 Message = "Logged in successfully"
             };
         }
 
-        return new ResponseDto { Message = "Invalid email or password" };
+        return null;
     }
 
 

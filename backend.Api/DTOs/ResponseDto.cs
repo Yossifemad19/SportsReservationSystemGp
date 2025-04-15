@@ -2,8 +2,20 @@
 
 namespace backend.Api.DTOs;
 
-public class ResponseDto
+public class OwnerResponseDto
 {
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Token { get; set; }
+    public string Message { get; set; }
+    public string Role { get; internal set; }
+    public string IsApproved { get; set; }
+}
+
+public class UserResponseDto
+{
+    public int Id { get; set; }
     public string Name { get; set; }
     public string Email { get; set; }
     public string Token { get; set; }
