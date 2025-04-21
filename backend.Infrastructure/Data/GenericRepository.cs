@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using backend.Core.Specification;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repository.Data;
@@ -48,6 +49,8 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         return await _dbSet.ToListAsync();
     }
 
+
+
     public async Task<IEnumerable<Entity>> GetAllIncludingAsync(params Expression<Func<Entity, object>>[] includeProperties)
     {
         IQueryable<Entity> query = _dbSet;
@@ -59,7 +62,23 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         return await query.ToListAsync();
     }
 
+    public async Task<IReadOnlyList<Entity>> GetAllWithSpecAsync(ISpecification<Entity> spec)
+    {
+        var query = ApplySpecification(spec);
+        return await query.ToListAsync();
+    }
 
+    public async Task<Entity> GetByIdWithSpecAsync(ISpecification<Entity> spec)
+    {
+        var query = ApplySpecification(spec);
+        return await query.FirstOrDefaultAsync();
+    }
+
+
+    private IQueryable<Entity> ApplySpecification(ISpecification<Entity> spec)
+    {
+        return SpecificationEvaluator<Entity>.GetQuery(_dbSet.AsQueryable(), spec);
+    }
     // // for test login
     // public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate,Expression<Func<Entity,object>> include)
     // {

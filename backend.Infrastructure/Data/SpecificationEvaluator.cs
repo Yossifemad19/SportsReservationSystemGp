@@ -4,19 +4,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repository.Data;
 
-public static class SpecificationEvaluator<T> where T:BaseEntity
+public static class SpecificationEvaluator<T> where T : BaseEntity
 {
-    public static IQueryable<T> GetQuery(IQueryable<T> queryInput,ISpecification<T> spec)
+    public static IQueryable<T> GetQuery(IQueryable<T> queryInput, ISpecification<T> spec)
     {
         var query = queryInput;
+
         if (spec.Criteria is not null)
         {
             query = query.Where(spec.Criteria);
         }
 
-        query = spec.Includes.Aggregate(query,(current,include)
-            =>current.Include(include)
-        );
+        query = spec.Includes.Aggregate(query, (current, include)
+            => current.Include(include));
 
         return query;
     }

@@ -4,6 +4,7 @@ using backend.Api.DTOs;
 using backend.Api.Errors;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using backend.Core.Specifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,10 +37,11 @@ public class CourtController:ControllerBase
 
 
     [HttpGet("getAll")]
-    public async Task<ActionResult<IReadOnlyList<CourtDto>>> GetAllCourts()
+    public async Task<ActionResult<IReadOnlyList<CourtDto>>> GetAllCourts([FromQuery] CourtSpecParams specParams)
     {
-         var courts = await _unitOfWork.Repository<Court>().GetAllAsync();
-         return Ok(_mapper.Map<IReadOnlyList<CourtDto>>(courts));
+        var spec = new CourtWithFiltersSpecification(specParams);
+        var courts = await _unitOfWork.Repository<Court>().GetAllWithSpecAsync(spec);
+        return Ok(_mapper.Map<IReadOnlyList<CourtDto>>(courts));
     }
 
     [HttpPut]

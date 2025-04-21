@@ -29,6 +29,7 @@ public class BookingRepository:GenericRepository<Booking>, IBookingRepository
         return await _context.Bookings
             .Where(b => b.CourtId == courtId && (b.Date == date || b.Date <= date.AddDays(7) ) )
             .Include(b=>b.Court)
+            .Include(b=>b.Court.Facility)
             .ToListAsync();
     }
 }

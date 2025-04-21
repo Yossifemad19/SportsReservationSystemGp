@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Linq.Expressions;
 using backend.Core.Entities;
+using backend.Core.Specification;
 
 namespace backend.Core.Interfaces;
 
@@ -17,6 +18,8 @@ public interface IGenericRepository<T> where T : BaseEntity
     Task<T?> GetByIdAsync(int id);
 
     Task<ICollection<T>> GetAllAsync();
+    Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec);
+    Task<T> GetByIdWithSpecAsync(ISpecification<T> spec);
 
 
 

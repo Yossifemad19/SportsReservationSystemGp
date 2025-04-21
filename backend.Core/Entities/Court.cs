@@ -11,11 +11,5 @@ public class Court:BaseEntity
     public Sport Sport { get; set; }
     public int Capacity { get; set; }
     public decimal PricePerHour { get; set; }
-    
-    [Column(TypeName = "interval")]
-    public TimeSpan OpeningTime { get; set; }
-    [Column(TypeName = "interval")]
-    public TimeSpan ClosingTime { get; set; }
-
     public ICollection<Booking> Bookings { get; set; }
 }

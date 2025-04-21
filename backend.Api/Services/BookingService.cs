@@ -1,6 +1,7 @@
 using backend.Api.DTOs.Booking;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using backend.Core.Specification;
 
 namespace backend.Api.Services;
 
@@ -18,15 +19,19 @@ public class BookingService: IBookingService
         // check if starttime greater than or equal endTime
         if (request.StartTime >= request.EndTime)
             return false;
+        
         // Check if the court exists
-        var court = await _unitOfWork.Repository<Court>().GetByIdAsync(request.CourtId);
+        var spec = new CourtWithFacilitySpecification(request.CourtId);
+
+        var court = await _unitOfWork.Repository<Court>().GetByIdWithSpecAsync(spec);
         if (court == null) return false;
 
         // Check facility opening hours
-        var facility = await _unitOfWork.Repository<Facility>().GetByIdAsync(court.FacilityId);
-        if (facility == null) return false;
+        
+        /*var facility = await _unitOfWork.Repository<Facility>().GetByIdAsync(court.FacilityId);
+        if (facility == null) return false;*/
 
-        if (request.StartTime < court.OpeningTime || request.EndTime > court.ClosingTime)
+        if (request.StartTime < court.Facility.OpeningTime || request.EndTime > court.Facility.ClosingTime)
             return false; // Booking outside facility hours
 
         // Check if the court is available
@@ -70,8 +75,8 @@ public class BookingService: IBookingService
         {
             CourtId = courtId,
             StartDate = date,
-            OpeningTime = bookings.Select(b=>b.Court.OpeningTime).FirstOrDefault(),
-            ClosingTime = bookings.Select(b => b.Court.ClosingTime).FirstOrDefault(),
+            OpeningTime = bookings.Select(b=>b.Court.Facility.OpeningTime).FirstOrDefault(),
+            ClosingTime = bookings.Select(b => b.Court.Facility.ClosingTime).FirstOrDefault(),
             BookingSlots = bookingSlots
         };
     }
