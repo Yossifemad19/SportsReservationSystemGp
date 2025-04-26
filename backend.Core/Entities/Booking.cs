@@ -15,5 +15,6 @@ public class Booking:BaseEntity
     [Column(TypeName = "interval")]
     public TimeSpan EndTime { get; set; }
     public BookingStatus status { get; set; }
+    public DateTime? CheckInTime { get; set; }
     // public decimal TotalPrice => (EndTime - StartTime)*Court.PricePerHour;
 }

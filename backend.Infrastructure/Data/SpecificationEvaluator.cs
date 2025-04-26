@@ -15,7 +15,12 @@ public static class SpecificationEvaluator<T> where T : BaseEntity
             query = query.Where(spec.Criteria);
         }
 
-        query = spec.Includes.Aggregate(query, (current, include)
+        // Apply includes
+        query = spec.Includes.Aggregate(query, (current, include) 
+            => current.Include(include));
+        
+        // Apply string-based includes
+        query = spec.IncludeStrings.Aggregate(query, (current, include) 
             => current.Include(include));
 
         return query;
