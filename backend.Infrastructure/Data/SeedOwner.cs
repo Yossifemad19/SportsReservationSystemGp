@@ -23,8 +23,8 @@ public class SeedOwners
             {
                 Id = 1,
                 FirstName = "first",
-                LastName = "user",
-                Email = "user1@gmail.com",
+                LastName = "owner",
+                Email = "owner1@gmail.com",
                 PhoneNumber = "01111885599",
                 PasswordHash = hashPassword,
                 UserRole = UserRole.Owner,
@@ -35,8 +35,8 @@ public class SeedOwners
             {
                 Id = 2,
                 FirstName = "second",
-                LastName = "user",
-                Email = "user2@gmail.com",
+                LastName = "owner",
+                Email = "owner2@gmail.com",
                 PhoneNumber = "01111225599",
                 PasswordHash = hashPassword,
                 UserRole = UserRole.Owner,

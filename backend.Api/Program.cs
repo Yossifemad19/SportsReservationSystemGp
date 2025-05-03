@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
+using backend.Api.Services.Interfaces;
 
 namespace backend.Api;
 
@@ -92,7 +93,9 @@ public class Program
         builder.Services.AddScoped<IFacilityService, FacilityService>();
         builder.Services.AddScoped<IBookingRepository, BookingRepository>();
         builder.Services.AddScoped<IBookingService, BookingService>();
-        builder.Services.AddScoped<IAdminService, AdminService>();  
+        builder.Services.AddScoped<IAdminService, AdminService>();
+        builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+
 
 
 

@@ -62,5 +62,26 @@ public class AuthController: ControllerBase
         });
     }
 
+    [HttpGet("UserProfile")]
+    public async Task<IActionResult> GetUserById(int id)
+    {
+        var user = await _authService.GetUserById(id);
+        return Ok(user);
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
+    {
+
+        var result = await _authService.ForgotPassword(forgotPasswordDto.Email);
+        return Ok(new { Message = result });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] PasswordDto passwordDto)
+    {
+        var result = await _authService.ResetPassword(passwordDto);
+        return Ok(new { Message = result });
+    }
 
 }

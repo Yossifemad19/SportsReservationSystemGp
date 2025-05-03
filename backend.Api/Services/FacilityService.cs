@@ -35,18 +35,18 @@ public class FacilityService : IFacilityService
 {
     if (facilityDto.Address == null)
     {
-        return new FacilityResponseDto { Message = "Address is required" };
+            return null;
     }
 
     decimal latitude = facilityDto.Address.Latitude;
     decimal longitude = facilityDto.Address.Longitude;
 
-    if (!IsWithinCairo(latitude, longitude))
+    if (!IsWithinCairo(latitude, longitude) || !IsWithinGiza(latitude, longitude))
     {
-        return new FacilityResponseDto { Message = "Facility location must be inside Cairo" };
+        return new FacilityResponseDto { Message = "Facility location must be inside Cairo or Giza" };
     }
 
-    var imagesFolder = Path.Combine(_env.WebRootPath,"images/facilities");
+        var imagesFolder = Path.Combine(_env.WebRootPath,"images/facilities");
     if (!Directory.Exists(imagesFolder)) 
         Directory.CreateDirectory(imagesFolder);
     
@@ -68,8 +68,8 @@ public class FacilityService : IFacilityService
 
     return result > 0 
         ? new FacilityResponseDto { Message = "Facility created successfully.", Data = _mapper.Map<FacilityDto>(facility) } 
-        : new FacilityResponseDto { Message = "Facility could not be created." };
-}
+        : null;
+    }
 
 
     private bool IsWithinCairo(decimal latitude, decimal longitude)
@@ -77,6 +77,14 @@ public class FacilityService : IFacilityService
         return latitude >= 29.8m && latitude <= 30.2m &&
                longitude >= 31.1m && longitude <= 31.5m;
     }
+
+    private bool IsWithinGiza(decimal latitude, decimal longitude)
+    {
+        return latitude >= 29.85m && latitude <= 30.1m &&
+               longitude >= 31.0m && longitude <= 31.3m;
+    }
+
+
 
 
 

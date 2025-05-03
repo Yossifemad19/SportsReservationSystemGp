@@ -13,4 +13,8 @@ public class User : BaseEntity
 
     public ICollection<Booking> Bookings { get; set; }
 
+        public string? ResetToken { get; set; }
+        public DateTime? ResetTokenExpiry { get; set; }
+
+
 }
