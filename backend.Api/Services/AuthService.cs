@@ -163,7 +163,7 @@ public class AuthService: IAuthService
         var user = await _unitOfWork.Repository<User>().FindAsync(x => x.ResetToken == passwordDto.Token);
         if (user == null || user.ResetTokenExpiry < DateTime.UtcNow)
         {
-            return "Invalid or expired reset token.";
+            return null;
         }
 
         
@@ -173,7 +173,7 @@ public class AuthService: IAuthService
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.CompleteAsync();
 
-        return "Password has been reset successfully.";
+        return null;
     }
 
 
