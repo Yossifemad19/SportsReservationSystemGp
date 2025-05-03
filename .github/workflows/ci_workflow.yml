@@ -45,3 +45,10 @@ jobs:
     
     - name: Run tests
       run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+    
+    - name: Publish artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: ./bin/Release

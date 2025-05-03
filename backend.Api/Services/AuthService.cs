@@ -23,14 +23,13 @@ public class AuthService: IAuthService
         _tokenService = tokenService;
         _emailService = emailservice;
     }
-    public async Task<string> Register(RegisterDto registerDto, UserRole userRole)
+    public async Task<string?> Register(RegisterDto registerDto, UserRole userRole)
     {
         var user_profile = _mapper.Map<User>(registerDto);
         user_profile.UserRole = userRole;
 
         user_profile.PasswordHash = GetHashedPassword(registerDto.Password);
 
-        // var result =await _userRepository.AddAsync(user_profile);
         _unitOfWork.Repository<User>().Add(user_profile);
         if (await _unitOfWork.CompleteAsync() > 0)
         {
@@ -40,7 +39,7 @@ public class AuthService: IAuthService
         return null;
     }
 
-    public async Task<UserResponseDto> Login(LoginDto loginDto)
+    public async Task<UserResponseDto?> Login(LoginDto loginDto)
     {
         var user = await _unitOfWork.Repository<User>().FindAsync(x => x.Email == loginDto.Email);
         if (user != null && ValidatePassword(loginDto.Password, user.PasswordHash))
@@ -62,7 +61,7 @@ public class AuthService: IAuthService
     
 
 
-    public async Task<string> OwnerRegister(OwnerRegisterDto ownerRegisterDto, UserRole userRole)
+public async Task<string?> OwnerRegister(OwnerRegisterDto ownerRegisterDto, UserRole userRole)
     {
         var owner = _mapper.Map<Owner>(ownerRegisterDto);
         owner.UserRole = userRole;
@@ -73,13 +72,13 @@ public class AuthService: IAuthService
         _unitOfWork.Repository<Owner>().Add(owner);
         if (await _unitOfWork.CompleteAsync() > 0)
         {
-            return "Registration successful & Please wait for admin approval";
+            return "Registration successfull & Please wait for admin approval";
         }
         return null;
     }
 
 
-    public async Task<OwnerResponseDto> OwnerLogin(OwnerLoginDto ownerLoginDto)
+    public async Task<OwnerResponseDto?> OwnerLogin(OwnerLoginDto ownerLoginDto)
     {
         var owner = await _unitOfWork.Repository<Owner>().FindAsync(x => x.Email == ownerLoginDto.Email);
 
@@ -111,16 +110,15 @@ public class AuthService: IAuthService
         return null;
     }
 
-    public async Task<GetAllResponse> GetUserById(int id)
+    public async Task<GetAllResponse?> GetUserById(int id)
     {
         var user = await _unitOfWork.Repository<User>()
-                                        .GetByIdAsync(id);
+                                    .GetByIdAsync(id);
 
         if (user == null)
         {
-            throw new Exception($"User with id {id} not found.");
+            return null;
         }
-
 
         return new GetAllResponse
         {
@@ -129,12 +127,10 @@ public class AuthService: IAuthService
             LastName = user.LastName,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
-
-
         };
     }
 
-    public async Task<string> ForgotPassword(string email)
+    public async Task<string?> ForgotPassword(string email)
     {
         var user = await _unitOfWork.Repository<User>().FindAsync(x => x.Email == email);
         if (user == null)
@@ -142,23 +138,19 @@ public class AuthService: IAuthService
             return null;
         }
 
-
         var resetToken = Guid.NewGuid().ToString();
-
 
         user.ResetToken = resetToken;
         user.ResetTokenExpiry = DateTime.UtcNow.AddHours(1);
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.CompleteAsync();
 
-
         var resetLink = $"http://localhost:5000/api/auth/reset-password?token={Uri.EscapeDataString(resetToken)}";
         await _emailService.SendEmailAsync(user.Email, "Password Reset", $"Click here to reset your password: {resetLink}");
 
         return $"Password reset token is: {resetToken}";
-
     }
-    public async Task<string> ResetPassword(PasswordDto passwordDto)
+    public async Task<string?> ResetPassword(PasswordDto passwordDto)
     {
         var user = await _unitOfWork.Repository<User>().FindAsync(x => x.ResetToken == passwordDto.Token);
         if (user == null || user.ResetTokenExpiry < DateTime.UtcNow)
@@ -166,9 +158,8 @@ public class AuthService: IAuthService
             return null;
         }
 
-        
         user.PasswordHash = GetHashedPassword(passwordDto.NewPassword);
-        user.ResetToken = null; 
+        user.ResetToken = null;
         user.ResetTokenExpiry = null;
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.CompleteAsync();

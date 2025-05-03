@@ -32,19 +32,14 @@ public class AuthController: ControllerBase
         if(String.IsNullOrEmpty(result))
             return BadRequest(new ApiResponse(400,"Failed to register user"));
 
-        var user = new
-        {
-
-            FullName = registerDto.FirstName + " " + registerDto.LastName,
-            Email = registerDto.Email,
-            phoneNumber = registerDto.PhoneNumber,
-            Role = UserRole.Customer.ToString()
-        };
 
         return Ok(new
         {
             message = "Registered successfully",
-            user = user,
+            FullName = registerDto.FirstName + " " + registerDto.LastName,
+            Email = registerDto.Email,
+            phoneNumber = registerDto.PhoneNumber,
+            Role = UserRole.Customer.ToString(),
             token = result
         });
     }
@@ -66,6 +61,9 @@ public class AuthController: ControllerBase
     public async Task<IActionResult> GetUserById(int id)
     {
         var user = await _authService.GetUserById(id);
+        if (user == null)
+            return NotFound(new ApiResponse(404, "User not found"));
+
         return Ok(user);
     }
 
