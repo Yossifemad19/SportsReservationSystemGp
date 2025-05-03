@@ -3,11 +3,11 @@ name: Project CI
 on:
   push:
     branches:
-      - main
+      - master
       - detached
   pull_request:
     branches:
-      - main
+      - master
       - detached
 
 jobs:

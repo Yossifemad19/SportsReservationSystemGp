@@ -3,12 +3,12 @@ name: "CodeQL"
 on:
   push:
     branches:
-      - main
-      - develop
+      - master
+      - detached
   pull_request:
     branches:
-      - main
-      - develop
+      - master
+      - detached
   schedule:
     - cron: '0 0 * * 0' # Runs weekly on Sunday at midnight
 
