@@ -74,14 +74,20 @@ public class AuthController: ControllerBase
     {
 
         var result = await _authService.ForgotPassword(forgotPasswordDto.Email);
-        return Ok(new { Message = result });
+        if (string.IsNullOrEmpty(result))
+            return BadRequest(new ApiResponse(400, "Failed to send reset password link"));
+
+        return Ok(result);
     }
 
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] PasswordDto passwordDto)
     {
         var result = await _authService.ResetPassword(passwordDto);
-        return Ok(new { Message = result });
+        if (string.IsNullOrEmpty(result))
+            return BadRequest(new ApiResponse(400, "Failed to reset password"));
+
+        return Ok(result);
     }
 
 }

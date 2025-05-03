@@ -139,7 +139,7 @@ public class AuthService: IAuthService
         var user = await _unitOfWork.Repository<User>().FindAsync(x => x.Email == email);
         if (user == null)
         {
-            return "User with this email does not exist.";
+            return null;
         }
 
 
@@ -173,7 +173,7 @@ public class AuthService: IAuthService
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.CompleteAsync();
 
-        return null;
+        return "Password has been reset successfully.";
     }
 
 
