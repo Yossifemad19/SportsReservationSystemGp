@@ -10,7 +10,7 @@ on:
       - master
       - detached
   schedule:
-    - cron: '0 0 * * 0' # Runs weekly on Sunday at midnight
+    - cron: '0 0 * * 0' # Every Sunday at midnight UTC
 
 jobs:
   analyze:
@@ -33,7 +33,7 @@ jobs:
 
     
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
 
@@ -45,4 +45,4 @@ jobs:
 
     
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
