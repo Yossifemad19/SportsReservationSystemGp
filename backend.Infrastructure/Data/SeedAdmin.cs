@@ -1,32 +1,40 @@
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using backend.Core.Specification;
 
-namespace backend.Repository.Data;
+namespace backend.Infrastructure.Data;
 
-public class SeedAdmin
+public static class SeedAdmin
 {
-    public static async Task<int> SeedAdminData(IUnitOfWork unitOfWork, string hashPassword)
+    public static async Task<int> SeedAdminData(IUnitOfWork unitOfWork, string adminPasswordHash)
     {
-        var adminRepository = unitOfWork.Repository<Admin>();
-
-        var existingAdmin = await adminRepository.FindAsync(u => u.UserRole == UserRole.Admin);
-
-        if (existingAdmin == null) 
+        var adminRole = await unitOfWork.Repository<UserRole>().GetFirstOrDefaultAsync(new UserRoleSpecification("Admin"));
+        if (adminRole == null)
         {
-            var adminUser = new Admin
+            adminRole = new UserRole
             {
-                FirstName = "admin",
-                LastName = "admin",
-                PasswordHash = hashPassword,
-                UserRole = UserRole.Admin,
-                Email = "admin@gmail.com",
+                RoleName = "Admin",
+                Description = "System Administrator"
             };
-
-            adminRepository.Add(adminUser);
-
-            return await unitOfWork.CompleteAsync();
+            unitOfWork.Repository<UserRole>().Add(adminRole);
+            await unitOfWork.Complete();
         }
 
-        return -1;
+        var admin = await unitOfWork.Repository<Admin>().GetFirstOrDefaultAsync(new AdminSpecification("admin@example.com"));
+        if (admin == null)
+        {
+            admin = new Admin
+            {
+                Email = "admin@example.com",
+                PasswordHash = adminPasswordHash,
+                UserRoleId = adminRole.Id,
+                FirstName = "Admin",
+                LastName = "User"
+            };
+            unitOfWork.Repository<Admin>().Add(admin);
+            return await unitOfWork.Complete();
+        }
+
+        return -1; // Admin already exists
     }
 }

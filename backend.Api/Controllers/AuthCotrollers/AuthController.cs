@@ -27,7 +27,7 @@ public class AuthController: ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
        
-        var result = await _authService.Register(registerDto,UserRole.Customer);
+        var result = await _authService.Register(registerDto, "Customer");
         
         if(String.IsNullOrEmpty(result))
             return BadRequest(new ApiResponse(400,"Failed to register user"));
@@ -38,7 +38,7 @@ public class AuthController: ControllerBase
             FullName = registerDto.FirstName + " " + registerDto.LastName,
             Email = registerDto.Email,
             phoneNumber = registerDto.PhoneNumber,
-            Role = UserRole.Customer.ToString()
+            Role = "Customer"
         };
 
         return Ok(new

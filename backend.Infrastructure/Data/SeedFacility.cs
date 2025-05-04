@@ -121,7 +121,7 @@ public static class SeedFacilities
             facilityRepository.Add(facility);
         }
 
-        return await unitOfWork.CompleteAsync();
+        return await unitOfWork.Complete();
     }
 }
 

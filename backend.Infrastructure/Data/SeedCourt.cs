@@ -67,7 +67,7 @@ public static class SeedCourts
             courtRepository.Add(court);
         }
 
-        return await unitOfWork.CompleteAsync(); 
+        return await unitOfWork.Complete(); 
     }
 }
 

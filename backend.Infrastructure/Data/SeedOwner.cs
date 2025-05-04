@@ -5,51 +5,55 @@ using System.Text;
 using System.Threading.Tasks;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using backend.Core.Specification;
 
-namespace backend.Repository.Data;
+namespace backend.Infrastructure.Data;
 
 public class SeedOwners
 {
-    public static async Task<int> SeedOwnersData(IUnitOfWork unitOfWork, string hashPassword)
+    public static async Task<int> SeedOwnersData(IUnitOfWork unitOfWork, string ownerPasswordHash)
     {
-        var ownerRepo = unitOfWork.Repository<Owner>();
-
-        if ((await ownerRepo.GetAllAsync()).Any())
-            return 0;
+        var ownerRole = await unitOfWork.Repository<UserRole>().GetFirstOrDefaultAsync(new UserRoleSpecification("Owner"));
+        if (ownerRole == null)
+        {
+            ownerRole = new UserRole
+            {
+                RoleName = "Owner",
+                Description = "Facility Owner"
+            };
+            unitOfWork.Repository<UserRole>().Add(ownerRole);
+            await unitOfWork.Complete();
+        }
 
         var owners = new List<Owner>
         {
             new Owner
             {
-                Id = 1,
-                FirstName = "first",
-                LastName = "user",
-                Email = "user1@gmail.com",
-                PhoneNumber = "01111885599",
-                PasswordHash = hashPassword,
-                UserRole = UserRole.Owner,
-                IsApproved = true,
-                Facilities = new List<Facility>() 
+                Email = "owner1@example.com",
+                PasswordHash = ownerPasswordHash,
+                UserRoleId = ownerRole.Id,
+                FirstName = "Owner",
+                LastName = "One"
             },
             new Owner
             {
-                Id = 2,
-                FirstName = "second",
-                LastName = "user",
-                Email = "user2@gmail.com",
-                PhoneNumber = "01111225599",
-                PasswordHash = hashPassword,
-                UserRole = UserRole.Owner,
-                IsApproved = true,
-                Facilities = new List<Facility>()
+                Email = "owner2@example.com",
+                PasswordHash = ownerPasswordHash,
+                UserRoleId = ownerRole.Id,
+                FirstName = "Owner",
+                LastName = "Two"
             }
         };
 
         foreach (var owner in owners)
         {
-            ownerRepo.Add(owner); 
+            var existingOwner = await unitOfWork.Repository<Owner>().GetFirstOrDefaultAsync(new OwnerSpecification(owner.Email));
+            if (existingOwner == null)
+            {
+                unitOfWork.Repository<Owner>().Add(owner);
+            }
         }
 
-        return await unitOfWork.CompleteAsync();
+        return await unitOfWork.Complete();
     }
 }

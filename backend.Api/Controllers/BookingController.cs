@@ -23,7 +23,8 @@ public class BookingController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> BookCourt([FromBody] BookingRequestDto request)
     {
-        var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+        var userId = int.Parse(User.FindFirst("sub")?.Value);
+        ;
         var result = await _bookingService.BookCourtAsync(request, userId);
         
         if (!result.Success)
@@ -43,7 +44,7 @@ public class BookingController : ControllerBase
     [HttpPut("cancel/{bookingId}")]
     public async Task<IActionResult> CancelBooking(int bookingId)
     {
-        var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+        var userId = int.Parse(User.FindFirst("sub")?.Value);
         var result = await _bookingService.CancelBookingAsync(bookingId, userId);
         
         if (!result.Success)
@@ -56,7 +57,7 @@ public class BookingController : ControllerBase
     [HttpPut("confirm/{bookingId}")]
     public async Task<IActionResult> ConfirmBooking(int bookingId)
     {
-        var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+        var userId = int.Parse(User.FindFirst("sub")?.Value);
         var result = await _bookingService.ConfirmBookingAsync(bookingId, userId);
         
         if (!result.Success)
@@ -69,7 +70,7 @@ public class BookingController : ControllerBase
     [HttpGet("user")]
     public async Task<IActionResult> GetUserBookings([FromQuery] string status = null)
     {
-        var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+        var userId = int.Parse(User.FindFirst("sub")?.Value);
         
         BookingStatus? bookingStatus = null;
         if (!string.IsNullOrEmpty(status) && Enum.TryParse<BookingStatus>(status, true, out var parsedStatus))
@@ -85,7 +86,7 @@ public class BookingController : ControllerBase
     [HttpPut("checkin/{bookingId}")]
     public async Task<IActionResult> CheckInBooking(int bookingId)
     {
-        var ownerId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+        var ownerId = int.Parse(User.FindFirst("sub")?.Value);
         var result = await _bookingService.CheckInBookingAsync(bookingId, ownerId);
         
         if (!result.Success)

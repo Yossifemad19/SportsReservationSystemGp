@@ -1,4 +1,4 @@
-
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using backend.Api.DTOs;
 using backend.Api.Errors;
@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using FluentValidation.AspNetCore;
 using backend.Api.Helpers;
 using backend.Api.Middlewares;
+using backend.Infrastructure.Data;
+using backend.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -28,6 +30,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         
+        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -93,6 +96,10 @@ public class Program
         builder.Services.AddScoped<IBookingRepository, BookingRepository>();
         builder.Services.AddScoped<IBookingService, BookingService>();
         builder.Services.AddScoped<IAdminService, AdminService>();  
+        //builder.Services.AddScoped<IAIChatService, AIChatService>();
+        //builder.Services.AddScoped<IMatchingService, MatchingService>();
+        builder.Services.AddScoped<IMatchService, MatchService>();
+        builder.Services.AddLogging();
 
 
 
@@ -102,7 +109,12 @@ public class Program
             .AddFluentValidation(f => {
                 f.RegisterValidatorsFromAssemblyContaining<RegisterDto>();
             })
-            ;
+            .AddJsonOptions(options =>
+            {
+                // Change this from Preserve to IgnoreCycles to avoid the $id and $values in the response
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.MaxDepth = 64; // Keep this setting
+            });
         
         builder.Services.Configure<ApiBehaviorOptions>(o =>
             {
@@ -253,6 +265,15 @@ public class Program
                 logger.LogInformation("Courts already seeded");
             else
                 logger.LogError("Error occurred while seeding courts");
+
+            // Add this after the other seed calls
+            var roleResult = await SeedUserRoles.SeedRoles(unitOfWork);
+            if (roleResult > 0)
+                logger.LogInformation("Successfully seeded user roles");
+            else if (roleResult == 0)
+                logger.LogInformation("User roles already seeded");
+            else
+                logger.LogError("Error occurred while seeding user roles");
 
         }
         catch (Exception ex)
