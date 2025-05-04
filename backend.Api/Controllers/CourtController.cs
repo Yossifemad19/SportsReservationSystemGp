@@ -31,7 +31,7 @@ public class CourtController:ControllerBase
         var court = _mapper.Map<Court>(courtDto);
         
         _unitOfWork.Repository<Court>().Add(court);
-        return await _unitOfWork.CompleteAsync()>0?Ok("court add"):
+        return await _unitOfWork.Complete()>0?Ok("court add"):
             BadRequest(new ApiResponse(400,"court add failed"));
     }
 
@@ -64,7 +64,7 @@ public class CourtController:ControllerBase
 
 
         _unitOfWork.Repository<Court>().Update(existingCourt);
-        await _unitOfWork.CompleteAsync();
+        await _unitOfWork.Complete();
 
         return Ok("Court updated successfully");
     }

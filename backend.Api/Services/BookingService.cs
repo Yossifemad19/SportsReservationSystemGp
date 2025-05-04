@@ -52,7 +52,7 @@ public class BookingService : IBookingService
         _unitOfWork.Repository<Booking>().Add(booking);
         
         // Save changes
-        var result = await _unitOfWork.CompleteAsync();
+        var result = await _unitOfWork.Complete();
         if (result <= 0) return (false, "Failed to save booking");
         
         return (true, "Booking successful");
@@ -119,7 +119,7 @@ public class BookingService : IBookingService
         
         _unitOfWork.Repository<Booking>().Update(booking);
         
-        var result = await _unitOfWork.CompleteAsync();
+        var result = await _unitOfWork.Complete();
         if (result <= 0) return (false, "Failed to cancel booking");
         
         return (true, "Booking cancelled successfully");
@@ -148,7 +148,7 @@ public class BookingService : IBookingService
         _unitOfWork.Repository<Booking>().Update(booking);
         
         // Save changes
-        var result = await _unitOfWork.CompleteAsync();
+        var result = await _unitOfWork.Complete();
         if (result <= 0) return (false, "Failed to confirm booking");
         
         return (true, "Booking confirmed successfully");
@@ -216,7 +216,7 @@ public class BookingService : IBookingService
         _unitOfWork.Repository<Booking>().Update(booking);
         
      
-        var result = await _unitOfWork.CompleteAsync();
+        var result = await _unitOfWork.Complete();
         if (result <= 0) return (false, "Failed to check in booking");
         
         return (true, "User successfully checked in");

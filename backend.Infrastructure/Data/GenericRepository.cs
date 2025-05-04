@@ -1,10 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
 using backend.Core.Specification;
+using backend.Repository.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Repository.Data;
+namespace backend.Infrastructure.Data;
 
 public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity : BaseEntity
 {
@@ -23,15 +28,14 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
 
     public async Task<Entity> FindAsync(Expression<Func<Entity, bool>> predicate)
     {
-        var entity= await _dbSet.FirstOrDefaultAsync(predicate);
+        var entity = await _dbSet.FirstOrDefaultAsync(predicate);
         return entity;
     }
     
-    
-
     public void Update(Entity entity)
     {
         _dbSet.Attach(entity);
+        _context.Entry(entity).State = EntityState.Modified;
     }
 
     public void Remove(Entity entity)
@@ -39,7 +43,12 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         _dbSet.Remove(entity);
     }
 
-    public async Task<Entity?> GetByIdAsync(int id)
+    public async Task<Entity> GetByIdAsync(int id)
+    {
+        return await _dbSet.FindAsync(id);
+    }
+
+    public async Task<Entity> GetByIdAsync(string id)
     {
         return await _dbSet.FindAsync(id);
     }
@@ -48,8 +57,6 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
     {
         return await _dbSet.ToListAsync();
     }
-
-
 
     public async Task<IEnumerable<Entity>> GetAllIncludingAsync(params Expression<Func<Entity, object>>[] includeProperties)
     {
@@ -74,6 +81,11 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
         return await query.FirstOrDefaultAsync();
     }
 
+    public async Task<Entity> GetFirstOrDefaultAsync(ISpecification<Entity> spec)
+    {
+        var query = ApplySpecification(spec);
+        return await query.FirstOrDefaultAsync();
+    }
 
     private IQueryable<Entity> ApplySpecification(ISpecification<Entity> spec)
     {

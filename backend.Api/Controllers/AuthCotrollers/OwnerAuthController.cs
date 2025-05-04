@@ -24,7 +24,7 @@ public class OwnerAuthController : ControllerBase
     [HttpPost("OwnerRegister")]
     public async Task<IActionResult> OwnerRegister([FromBody] OwnerRegisterDto ownerRegisterDto)
     {
-        var token = await _OwnerAuthService.OwnerRegister(ownerRegisterDto, UserRole.Owner);
+        var token = await _OwnerAuthService.OwnerRegister(ownerRegisterDto, "Owner");
 
         if (string.IsNullOrEmpty(token))
             return BadRequest(new ApiResponse(400, "Failed to register owner"));
@@ -35,7 +35,7 @@ public class OwnerAuthController : ControllerBase
             FullName = ownerRegisterDto.FirstName + " " + ownerRegisterDto.LastName,
             Email = ownerRegisterDto.Email,
             phoneNumber = ownerRegisterDto.PhoneNumber,
-            Role = UserRole.Owner.ToString()
+            Role = "Owner"
         };
 
         return Ok(new

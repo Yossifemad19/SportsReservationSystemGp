@@ -64,7 +64,7 @@ public class FacilityService : IFacilityService
     facility.OwnerId = int.Parse(ownerId);
     facility.ImageUrl = relativePath;
     _unitOfWork.Repository<Facility>().Add(facility);
-    var result = await _unitOfWork.CompleteAsync();
+    var result = await _unitOfWork.Complete();
 
     return result > 0 
         ? new FacilityResponseDto { Message = "Facility created successfully.", Data = _mapper.Map<FacilityDto>(facility) } 
@@ -127,7 +127,7 @@ public class FacilityService : IFacilityService
         _unitOfWork.Repository<Facility>().Remove(facility);
         
 
-        return await _unitOfWork.CompleteAsync()>0?true:false;
+        return await _unitOfWork.Complete()>0?true:false;
     }
 
     public async Task<List<FacilityDto>> GetAllFacilities()

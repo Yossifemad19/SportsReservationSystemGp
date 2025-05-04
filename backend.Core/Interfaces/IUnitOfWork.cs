@@ -2,9 +2,9 @@ using backend.Core.Entities;
 
 namespace backend.Core.Interfaces;
 
-public interface IUnitOfWork:IDisposable
+public interface IUnitOfWork : IDisposable
 {
-    IGenericRepository<T> Repository<T>() where T:BaseEntity;
+    IGenericRepository<T> Repository<T>() where T : BaseEntity;
     IBookingRepository BookingRepository { get; }
-    Task<int> CompleteAsync();
+    Task<int> Complete();
 }

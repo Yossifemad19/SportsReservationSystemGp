@@ -1,21 +1,45 @@
+using System;
 using System.Collections;
+using System.Threading.Tasks;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using backend.Infrastructure.Data;
 
-namespace backend.Repository.Data;
+namespace backend.Infrastructure.Data;
 
 public class UnitOfWork : IUnitOfWork
 {
-    
-    private  Hashtable _repositories;
     private readonly AppDbContext _context;
-    private  IBookingRepository _bookingRepository; 
-    public UnitOfWork(AppDbContext context)
+    private Hashtable _repositories;
+    private readonly IBookingRepository _bookingRepository;
+
+    public UnitOfWork(AppDbContext context, IBookingRepository bookingRepository)
     {
         _context = context;
+        _bookingRepository = bookingRepository;
     }
-    
-    public async Task<int> CompleteAsync()
+
+    public IBookingRepository BookingRepository => _bookingRepository;
+
+    public IGenericRepository<T> Repository<T>() where T : BaseEntity
+    {
+        if (_repositories == null)
+            _repositories = new Hashtable();
+
+        var type = typeof(T).Name;
+
+        if (!_repositories.ContainsKey(type))
+        {
+            var repositoryType = typeof(GenericRepository<>);
+            var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(T)), _context);
+
+            _repositories.Add(type, repositoryInstance);
+        }
+
+        return (IGenericRepository<T>)_repositories[type];
+    }
+
+    public async Task<int> Complete()
     {
         return await _context.SaveChangesAsync();
     }
@@ -23,31 +47,5 @@ public class UnitOfWork : IUnitOfWork
     public void Dispose()
     {
         _context.Dispose();
-    }
-
-    public IBookingRepository BookingRepository  
-    {
-        get
-        {
-            return _bookingRepository ??= new BookingRepository(_context);
-        }
-    }
-
-    public IGenericRepository<T> Repository<T>() where T : BaseEntity
-    {
-        if(_repositories==null) _repositories = new Hashtable();
-
-        var type =typeof(T).Name;
-
-        if(!_repositories.ContainsKey(type)) { 
-            
-            var repoType = typeof(GenericRepository<>);
-
-            var repo=Activator.CreateInstance(repoType.MakeGenericType(typeof(T)),_context);
-
-            _repositories.Add(type, repo);
-        }
-
-        return (IGenericRepository<T>) _repositories[type];
     }
 }

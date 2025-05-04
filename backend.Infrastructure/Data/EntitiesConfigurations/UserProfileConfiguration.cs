@@ -25,8 +25,11 @@ public class UserProfileConfiguration: IEntityTypeConfiguration<User>
             .HasColumnType("timestamp without time zone")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
         
-        builder.Property(u=>u.UserRole).HasConversion(os => os.ToString(), os => (UserRole)Enum.Parse(typeof(UserRole),os));
-
+        // Configure UserRole as a navigation property
+        builder.HasOne(u => u.UserRole)
+            .WithMany(r => r.Users)
+            .HasForeignKey(u => u.UserRoleId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Relations
         builder.HasMany(x=>x.Bookings).WithOne(b=>b.User)
