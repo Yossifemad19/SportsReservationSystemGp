@@ -155,6 +155,29 @@ public class AuthService : IAuthService
         return null;
     }
 
+    public async Task<GetAllResponse> GetUserById(int id)
+    {
+        var user = await _unitOfWork.Repository<User>()
+            .GetByIdAsync(id);
+
+        if (user == null)
+        {
+            throw new Exception($"User with id {id} not found.");
+        }
+
+
+        return new GetAllResponse
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+
+
+        };
+    }
+
     private async Task<UserRole> GetOrCreateUserRole(string roleName)
     {
         var roleSpec = new UserRoleSpecification(roleName);
@@ -173,6 +196,60 @@ public class AuthService : IAuthService
         }
         
         return userRole;
+    }
+    
+    public async Task<string> ForgotPassword(string email)
+    {
+        var user = await _unitOfWork.Repository<User>().FindAsync(x => x.Email == email);
+        if (user == null)
+        {
+            return "User with this email does not exist.";
+        }
+
+
+        var resetToken = Guid.NewGuid().ToString();
+
+
+        user.ResetToken = resetToken;
+        user.ResetTokenExpiry = DateTime.UtcNow.AddHours(1);
+        _unitOfWork.Repository<User>().Update(user);
+        await _unitOfWork.Complete();
+
+
+        var resetLink = $"http://localhost:5000/api/auth/reset-password?token={Uri.EscapeDataString(resetToken)}";
+        await _emailService.SendEmailAsync(user.Email, "Password Reset", $"Click here to reset your password: {resetLink}");
+
+        return $"Password reset token is: {resetToken}";
+
+    }
+    public async Task<string> ResetPassword(PasswordDto passwordDto)
+    {
+        var user = await _unitOfWork.Repository<User>().FindAsync(x => x.ResetToken == passwordDto.Token);
+        if (user == null || user.ResetTokenExpiry < DateTime.UtcNow)
+        {
+            return "Invalid or expired reset token.";
+        }
+
+        
+        user.PasswordHash = GetHashedPassword(passwordDto.NewPassword);
+        user.ResetToken = null; 
+        user.ResetTokenExpiry = null;
+        _unitOfWork.Repository<User>().Update(user);
+        await _unitOfWork.Complete();
+
+        return "Password has been reset successfully.";
+    }
+
+
+
+    public async Task<bool> IsEmailExist(string email)
+    {
+
+        var userExists = await _unitOfWork.Repository<User>().FindAsync(x => x.Email == email) != null;
+
+        var ownerExists = await _unitOfWork.Repository<Owner>().FindAsync(x => x.Email == email) != null;
+
+        return userExists || ownerExists;
     }
 
     public static string GetHashedPassword(string password)

@@ -39,7 +39,7 @@ public class AuthController: ControllerBase
             FullName = registerDto.FirstName + " " + registerDto.LastName,
             Email = registerDto.Email,
             phoneNumber = registerDto.PhoneNumber,
-            Role = UserRole.Customer.ToString(),
+            Role = "Customer",
             token = result
         });
     }
@@ -58,9 +58,10 @@ public class AuthController: ControllerBase
     }
 
     [HttpGet("UserProfile")]
-    public async Task<IActionResult> GetUserById(int id)
+    public async Task<IActionResult> GetUserById()
     {
-        var user = await _authService.GetUserById(id);
+        var userId = int.Parse(User.FindFirst("sub")?.Value);
+        var user = await _authService.GetUserById(userId);
         if (user == null)
             return NotFound(new ApiResponse(404, "User not found"));
 
