@@ -2,7 +2,9 @@
 using backend.Api.DTOs;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using backend.Core.Specification;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace backend.Api.Services;
 
@@ -23,11 +25,16 @@ public class AdminService : IAdminService
 
     public async Task<bool> ApproveOwner(int ownerId)
     {
-        var owner = await _unitOfWork.Repository<Owner>().FindAsync(x => x.Id == ownerId && x.UserRole == UserRole.Owner);
+        // Get the Owner role
+        var ownerRoleSpec = new UserRoleSpecification("Owner");
+        var ownerRole = await _unitOfWork.Repository<UserRole>().GetFirstOrDefaultAsync(ownerRoleSpec);
+        
+        // Find the owner and ensure they have the Owner role
+        var owner = await _unitOfWork.Repository<Owner>().FindAsync(x => x.Id == ownerId && x.UserRoleId == ownerRole.Id);
         if (owner == null) return false;
 
         owner.IsApproved = true;
-        return await _unitOfWork.CompleteAsync() > 0;
+        return await _unitOfWork.Complete() > 0;
     }
 
     public async Task<bool> RejectOwner(int ownerId)
@@ -36,7 +43,7 @@ public class AdminService : IAdminService
         if (owner == null) return false;
 
         _unitOfWork.Repository<Owner>().Remove(owner);
-        return await _unitOfWork.CompleteAsync() > 0;
+        return await _unitOfWork.Complete() > 0;
     }
 
 
@@ -46,7 +53,9 @@ public class AdminService : IAdminService
 
         if (admin != null && ValidatePassword(adminLoginDto.Password, admin.PasswordHash))
         {
-
+            // Get the Admin role
+            var adminRole = await _unitOfWork.Repository<UserRole>().GetByIdAsync(admin.UserRoleId);
+            
             var token = _tokenService.GenerateToken(admin);
 
             return new UserResponseDto
@@ -54,7 +63,7 @@ public class AdminService : IAdminService
                 Name = admin.FirstName + " " + admin.LastName,
                 Email = admin.Email,
                 Token = token,
-                Role = admin.UserRole.ToString(),
+                Role = adminRole?.RoleName ?? "Unknown",
                 Message = "Logged in successfully"
             };
         }
@@ -65,15 +74,13 @@ public class AdminService : IAdminService
     public async Task<List<GetAllResponse>> GetAllOwners()
     {
         var owners = await _unitOfWork.Repository<Owner>().GetAllAsync();
-        return owners.Select( owner => new GetAllResponse
+        return owners.Select(owner => new GetAllResponse
         {
             Id = owner.Id,
             FirstName = owner.FirstName,
             LastName = owner.LastName,
             Email = owner.Email,
             PhoneNumber = owner.PhoneNumber,
-
-
         }).ToList();
     }
 
@@ -87,8 +94,6 @@ public class AdminService : IAdminService
             LastName = user.LastName,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
-
-
         }).ToList();
     }
 

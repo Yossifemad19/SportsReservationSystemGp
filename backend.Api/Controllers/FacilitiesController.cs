@@ -36,7 +36,7 @@ public class FacilitiesController : ControllerBase
 
         
         
-        var ownerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        var ownerId = User.FindFirst("sub")?.Value;
 
         var createdFacility = await _facilityService.CreateFacility(facilityDto, ownerId);
 

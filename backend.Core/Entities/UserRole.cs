@@ -1,13 +1,15 @@
-using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations;
 
-namespace backend.Core.Entities;
-
-public enum UserRole
+namespace backend.Core.Entities
 {
-    [EnumMember(Value = "Customer")]
-    Customer,
-    [EnumMember(Value = "Owner")]
-    Owner,
-    [EnumMember(Value = "Admin")]
-    Admin
+    public class UserRole : BaseEntity
+    {
+        [Required]
+        [MaxLength(50)]
+        public string RoleName { get; set; }
+        
+        public string Description { get; set; }
+        
+        public ICollection<User> Users { get; set; } = new List<User>();
+    }
 }

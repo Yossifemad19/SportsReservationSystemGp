@@ -1,5 +1,6 @@
 using backend.Api.Errors;
 using backend.Core.Entities;
+using backend.Infrastructure.Data;
 using backend.Repository.Data;
 using Microsoft.AspNetCore.Mvc;
 

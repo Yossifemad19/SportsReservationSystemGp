@@ -34,7 +34,7 @@ public static class SeedSports
             sportRepository.Add(sport);
         }
 
-        return await unitOfWork.CompleteAsync(); 
+        return await unitOfWork.Complete(); 
     }
 }
 

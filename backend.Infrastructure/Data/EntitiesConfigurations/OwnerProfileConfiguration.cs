@@ -36,8 +36,11 @@ public class OwnerConfiguration : IEntityTypeConfiguration<Owner>
         builder.Property(o => o.PasswordHash)
             .IsRequired();
 
-        builder.Property(o => o.UserRole)
-            .IsRequired();
+        // Configure UserRole as a navigation property
+        builder.HasOne(o => o.UserRole)
+            .WithMany()
+            .HasForeignKey(o => o.UserRoleId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(o => o.IsApproved)
             .HasDefaultValue(false);

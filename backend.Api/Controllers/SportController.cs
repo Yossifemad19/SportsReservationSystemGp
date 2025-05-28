@@ -31,7 +31,7 @@ public class SportController : ControllerBase
             return BadRequest("Sport name is too long");
 
         _unitOfWork.Repository<Sport>().Add(new Sport() { Name = SportName });
-        return await _unitOfWork.CompleteAsync() > 0 ? Ok("sport added successfully") : BadRequest(new ApiResponse(400, "sport not added"));
+        return await _unitOfWork.Complete() > 0 ? Ok("sport added successfully") : BadRequest(new ApiResponse(400, "sport not added"));
 
     }
 
@@ -57,7 +57,7 @@ public class SportController : ControllerBase
 
 
         _unitOfWork.Repository<Sport>().Update(existingSport);
-        await _unitOfWork.CompleteAsync();
+        await _unitOfWork.Complete();
 
         return Ok("Sport updated successfully");
     }
