@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
 using backend.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace backend.Infrastructure.Data;
 
@@ -42,6 +43,11 @@ public class UnitOfWork : IUnitOfWork
     public async Task<int> Complete()
     {
         return await _context.SaveChangesAsync();
+    }
+
+    public async Task<IDbContextTransaction> BeginTransactionAsync()
+    {
+        return await _context.Database.BeginTransactionAsync();
     }
 
     public void Dispose()

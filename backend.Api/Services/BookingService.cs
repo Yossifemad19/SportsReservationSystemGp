@@ -34,28 +34,47 @@ public class BookingService : IBookingService
         if (request.StartTime < court.Facility.OpeningTime || request.EndTime > court.Facility.ClosingTime)
             return (false, "Booking outside facility hours"); 
 
-        // Check if the court is available
-        bool isAvailable = await _unitOfWork.BookingRepository.IsCourtAvailableAsync(request.CourtId, request.Date, request.StartTime, request.EndTime);
-        if (!isAvailable) return (false, "Court is not available at the requested time");
-
-        // Create booking
-        var booking = new Booking
+        // Start transaction with serializable isolation level to prevent concurrent bookings
+        using var transaction = await _unitOfWork.BeginTransactionAsync();
+        try
         {
-            CourtId = request.CourtId,
-            Date = request.Date,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-            UserId = userId,
-            status = BookingStatus.Pending // initial value
-        };
+            // Double check availability within transaction
+            bool isAvailable = await _unitOfWork.BookingRepository.IsCourtAvailableAsync(request.CourtId, request.Date, request.StartTime, request.EndTime);
+            if (!isAvailable) 
+            {
+                await transaction.RollbackAsync();
+                return (false, "Court is not available at the requested time");
+            }
 
-        _unitOfWork.Repository<Booking>().Add(booking);
-        
-        // Save changes
-        var result = await _unitOfWork.Complete();
-        if (result <= 0) return (false, "Failed to save booking");
-        
-        return (true, "Booking successful");
+            // Create booking
+            var booking = new Booking
+            {
+                CourtId = request.CourtId,
+                Date = request.Date,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                UserId = userId,
+                status = BookingStatus.Pending // initial value
+            };
+
+            _unitOfWork.Repository<Booking>().Add(booking);
+            
+            // Save changes
+            var result = await _unitOfWork.Complete();
+            if (result <= 0)
+            {
+                await transaction.RollbackAsync();
+                return (false, "Failed to save booking");
+            }
+
+            await transaction.CommitAsync();
+            return (true, "Booking successful");
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            return (false, "An error occurred while processing your booking. Please try again.");
+        }
     }
 
     public async Task<BookingResponseDto> GetBookingsForCourtAsync(int courtId, DateOnly date)
@@ -79,14 +98,12 @@ public class BookingService : IBookingService
             );
         
         // Get facility opening/closing times 
-        var facilityTimes = bookings.FirstOrDefault()?.Court?.Facility;
+        // var facilityTimes = bookings.FirstOrDefault()?.Court?.Facility;
         
         return new BookingResponseDto()
         {
             CourtId = courtId,
             StartDate = date,
-            OpeningTime = facilityTimes?.OpeningTime ?? TimeSpan.Zero,
-            ClosingTime = facilityTimes?.ClosingTime ?? TimeSpan.Zero,
             BookingSlots = bookingSlots
         };
     }
