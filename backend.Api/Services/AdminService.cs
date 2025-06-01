@@ -67,7 +67,7 @@ public class AdminService : IAdminService
                 Message = "Logged in successfully"
             };
         }
-        return new UserResponseDto { Message = "Invalid email or password" };
+        return null;
     }
 
 
