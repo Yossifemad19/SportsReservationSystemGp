@@ -129,11 +129,6 @@ public class AuthService : IAuthService
             return null;
         }
 
-        if (!owner.IsApproved)
-        {
-            return new OwnerResponseDto { Message = "Your account has not been approved yet" };
-        }
-
         if (ValidatePassword(ownerLoginDto.Password, owner.PasswordHash))
         {
             // Load the UserRole

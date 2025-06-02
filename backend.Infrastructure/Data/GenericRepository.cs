@@ -68,6 +68,18 @@ public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity
 
         return await query.ToListAsync();
     }
+    public async Task<Entity?> FindAsync(Expression<Func<Entity, bool>> predicate,params Expression<Func<Entity, object>>[] includes)
+    {
+        IQueryable<Entity> query = _dbSet;
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        return await query.FirstOrDefaultAsync(predicate);
+    }
+
 
     public async Task<IReadOnlyList<Entity>> GetAllWithSpecAsync(ISpecification<Entity> spec)
     {

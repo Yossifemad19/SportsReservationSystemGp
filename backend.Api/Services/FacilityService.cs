@@ -26,10 +26,11 @@ public class FacilityService : IFacilityService
     public async Task<FacilityDto?> GetFacilityById(int id)
     {
         var facility = await _unitOfWork.Repository<Facility>()
-                                        .GetByIdAsync(id);
-        
-        return facility is null?null:_mapper.Map<FacilityDto>(facility);
+            .FindAsync(f => f.Id == id, f => f.Address);
+
+        return facility is null ? null : _mapper.Map<FacilityDto>(facility);
     }
+
 
     public async Task<FacilityResponseDto> CreateFacility(FacilityDto facilityDto, string ownerId)
 {

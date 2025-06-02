@@ -104,6 +104,8 @@ public class Program
         //builder.Services.AddScoped<IMatchingService, MatchingService>();
         builder.Services.AddScoped<IMatchService, MatchService>();
         builder.Services.AddLogging();
+        builder.Services.AddScoped<IFriendRequestService, FriendRequestService>();
+
 
 
 

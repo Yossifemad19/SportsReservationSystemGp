@@ -53,8 +53,12 @@ public class OwnerAuthController : ControllerBase
         if (result == null)
             return BadRequest(new ApiResponse(400, "Username or password is incorrect"));
 
+        
+        if (!bool.TryParse(result.IsApproved, out var isApproved) || !isApproved)
+            return Unauthorized(new ApiResponse(401, "Your account is not approved yet. Please wait for admin approval."));
+
         return Ok(new
-        { 
+        {
             Data = result
         });
     }

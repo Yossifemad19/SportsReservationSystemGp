@@ -33,6 +33,7 @@ public class MappingProfiles: Profile
                 src.RaterUser != null ? $"{src.RaterUser.FirstName}_{src.RaterUser.LastName}" : $"User_{src.RaterUserId}"))
             .ForMember(dest => dest.RatedUserName, opt => opt.MapFrom(src => 
                 src.RatedUser != null ? $"{src.RatedUser.FirstName}_{src.RatedUser.LastName}" : $"User_{src.RatedUserId}"));
+        CreateMap<FriendRequest, FriendRequestDto>().ReverseMap();
     }
 }
 

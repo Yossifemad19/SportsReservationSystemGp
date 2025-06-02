@@ -14,7 +14,7 @@ public interface IGenericRepository<T> where T : BaseEntity
     void Update(T entity);
     void Remove(T entity);
 
-    
+    Task<T?> FindAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
     Task<T> FindAsync(Expression<Func<T, bool>> predicate);
     // Task<T> FindAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> include);
     Task<IEnumerable<T>> GetAllIncludingAsync(params Expression<Func<T, object>>[] includeProperties);

@@ -10,7 +10,7 @@ public interface IAdminService
     Task<bool> ApproveOwner(int ownerId);
     Task<List<GetAllResponse>> GetAllUsers();
     
-    Task<List<GetAllResponse>> GetAllOwners();
+    Task<List<GetAllOwnerResponse>> GetAllOwners();
     public Task<GetAllResponse> GetOwnerById(int id);
     public Task<GetAllResponse> GetUserById(int id);
     Task<bool> RejectOwner(int ownerId);

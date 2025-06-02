@@ -71,16 +71,17 @@ public class AdminService : IAdminService
     }
 
 
-    public async Task<List<GetAllResponse>> GetAllOwners()
+    public async Task<List<GetAllOwnerResponse>> GetAllOwners()
     {
         var owners = await _unitOfWork.Repository<Owner>().GetAllAsync();
-        return owners.Select(owner => new GetAllResponse
+        return owners.Select(owner => new GetAllOwnerResponse
         {
             Id = owner.Id,
             FirstName = owner.FirstName,
             LastName = owner.LastName,
             Email = owner.Email,
             PhoneNumber = owner.PhoneNumber,
+            IsApproved = owner.IsApproved
         }).ToList();
     }
 
