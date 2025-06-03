@@ -28,7 +28,7 @@ public class SeedOwners
         var owners = new List<Owner>
         {
             new Owner
-            {   Id = 1,
+            {   
                 FirstName = "first",
                 LastName = "owner",
                 Email = "owner1@example.com",
@@ -39,7 +39,6 @@ public class SeedOwners
             },
             new Owner
             {
-                Id = 2,
                 PhoneNumber = "01111225599",
                 Email = "owner2@example.com",
                 PasswordHash = ownerPasswordHash,

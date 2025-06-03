@@ -9,7 +9,7 @@ public class FacilityDtoValidator : AbstractValidator<FacilityDto>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required")
-            .Length(2,10).WithMessage("Name  Must Be Between 2 and 10 Characters");
+            .Length(2,20).WithMessage("Name  Must Be Between 2 and 20 Characters");
 
         RuleFor(x => x.Address)
             .NotNull().WithMessage("Address is required")

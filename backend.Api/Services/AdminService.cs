@@ -60,6 +60,7 @@ public class AdminService : IAdminService
 
             return new UserResponseDto
             {
+                Id = admin.Id,
                 Name = admin.FirstName + " " + admin.LastName,
                 Email = admin.Email,
                 Token = token,

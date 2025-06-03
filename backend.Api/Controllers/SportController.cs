@@ -61,5 +61,17 @@ public class SportController : ControllerBase
 
         return Ok("Sport updated successfully");
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetSportById(int id)
+    {
+        var sport = await _unitOfWork.Repository<Sport>().GetByIdAsync(id);
+        if (sport == null)
+            return NotFound(new ApiResponse(404, "Sport not found"));
+
+        var sportDto = _mapper.Map<SportDto>(sport);
+        return Ok(sportDto);
+    }
+
 }
 

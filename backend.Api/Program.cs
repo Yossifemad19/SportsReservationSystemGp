@@ -281,6 +281,16 @@ public class Program
             else
                 logger.LogError("Error occurred while seeding user roles");
 
+            var userPasswordHash = AuthService.GetHashedPassword("User@123");
+            var userResult = await SeedUsers.SeedUsersData(unitOfWork, userPasswordHash);
+
+            if (ownerResult > 0)
+                logger.LogInformation("Successfully seeded users data");
+            else if (ownerResult == 0)
+                logger.LogInformation("Owners data seeding failed");
+            else
+                logger.LogError("users data was not seeded");
+
         }
         catch (Exception ex)
         {

@@ -14,7 +14,7 @@ public class FacilityDto
 
     public IFormFile Image { get; set; }
     public string? ImageUrl { get; set; }
-    
-    public int OwnerId { get; set; }  
+
+    public int OwnerId { get; set; }
     public AddressDto Address { get; set; }
 }

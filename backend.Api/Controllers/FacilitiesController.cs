@@ -5,6 +5,7 @@ using backend.Api.Services;
 using backend.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sprache;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -40,23 +41,40 @@ public class FacilitiesController : ControllerBase
 
         var createdFacility = await _facilityService.CreateFacility(facilityDto, ownerId);
 
+        if (createdFacility.Message == "Facility location must be inside Cairo or Giza")
+        {
+            return BadRequest(createdFacility.Message);
+        }
+
         return createdFacility != null ? (IActionResult)Ok(createdFacility) :
             BadRequest(new ApiResponse(400, "facility could not be created"));
 
         // return CreatedAtAction(nameof(Get), new { id = createdFacility.Id }, createdFacility);
     }
 
-    // [HttpPut("{id}")]
-    // public async Task<IActionResult> Update(int id, [FromBody] FacilityDto facilityDto)
-    // {
-    //     if (id != facilityDto.Id) 
-    //         return BadRequest();
-    //
-    //     var ExistingFacility = await _facilityService.UpdateFacility(facilityDto);
-    //     if (!ExistingFacility) return NotFound();
-    //
-    //     return BadRequest();
-    // }
+    [HttpPut("")]
+    [Authorize(Roles = "Owner")]
+    public async Task<IActionResult> UpdateFacility([FromForm] FacilityDto facilityDto)
+    {
+        var ownerId = User.FindFirst("sub")?.Value;
+
+        if (facilityDto == null || facilityDto.Id <= 0)
+            return BadRequest("Facility data or ID is missing.");
+        
+
+        var updatedFacility = await _facilityService.UpdateFacility(facilityDto, ownerId);
+
+        if (updatedFacility.Message == "Facility not found." ||
+            updatedFacility.Message == "You do not own this facility." ||
+            updatedFacility.Message == "Facility location must be inside Cairo or Giza")
+        {
+            return BadRequest(updatedFacility.Message);
+        }
+
+        return Ok(updatedFacility);
+    }
+
+
 
     [HttpDelete("{id}")]
     //[Authorize(Roles = "Owner")]

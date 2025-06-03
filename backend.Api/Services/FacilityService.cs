@@ -42,7 +42,7 @@ public class FacilityService : IFacilityService
     decimal latitude = facilityDto.Address.Latitude;
     decimal longitude = facilityDto.Address.Longitude;
 
-    if (!IsWithinCairo(latitude, longitude) || !IsWithinGiza(latitude, longitude))
+    if (!IsWithinCairo(latitude, longitude) && !IsWithinGiza(latitude, longitude))
     {
         return new FacilityResponseDto { Message = "Facility location must be inside Cairo or Giza" };
     }
@@ -89,34 +89,64 @@ public class FacilityService : IFacilityService
 
 
 
-    // public async Task<bool> UpdateFacility(FacilityDto facilityDto)
-    // {
-    //     var existingFacility = await _unitOfWork.Repository<Facility>()
-    //                                             .GetByIdAsync(facilityDto.Id);
-    //
-    //     if (existingFacility == null)
-    //         return false;
-    //
-    //
-    //     // if you want to do The mapping manually 
-    //
-    //     existingFacility.Name = facilityDto.Name;
-    //
-    //    
-    //     existingFacility.Address = new Address
-    //     {
-    //         StreetAddress = facilityDto.Address.StreetAddress,
-    //         City = facilityDto.Address.City,
-    //         Latitude = facilityDto.Address.Longitude,
-    //         Longitude = facilityDto.Address.Longitude,
-    //         
-    //     };
-    //
-    //     _unitOfWork.Repository<Facility>().Update(existingFacility);
-    //     await _unitOfWork.CompleteAsync();
-    //
-    //     return true;
-    // }
+    public async Task<FacilityResponseDto?> UpdateFacility(FacilityDto facilityDto, string ownerId)
+    {
+        var existingFacility = await _unitOfWork.Repository<Facility>().FindAsync(
+            f => f.Id == facilityDto.Id,
+            f => f.Address
+        );
+
+        if (existingFacility == null)
+        {
+            return new FacilityResponseDto { Message = "Facility not found." };
+        }
+
+        if (existingFacility.OwnerId.ToString() != ownerId)
+        {
+            return new FacilityResponseDto { Message = "You do not own this facility." };
+        }
+
+        decimal latitude = facilityDto.Address.Latitude;
+        decimal longitude = facilityDto.Address.Longitude;
+        if (!IsWithinCairo(latitude, longitude) && !IsWithinGiza(latitude, longitude))
+        {
+            return new FacilityResponseDto { Message = "Facility location must be inside Cairo or Giza" };
+        }
+
+        
+        _mapper.Map(facilityDto, existingFacility);
+        existingFacility.OwnerId = int.Parse(ownerId);
+
+        if (facilityDto.Image != null)
+        {
+            var imagesFolder = Path.Combine(_env.WebRootPath, "images/facilities");
+            if (!Directory.Exists(imagesFolder))
+                Directory.CreateDirectory(imagesFolder);
+
+            var imageFile = $"{Guid.NewGuid()}-{facilityDto.Image.FileName}";
+            var relativePath = Path.Combine("images/facilities", imageFile);
+            var filePath = Path.Combine(imagesFolder, imageFile);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await facilityDto.Image.CopyToAsync(fileStream);
+            }
+
+            existingFacility.ImageUrl = relativePath;
+        }
+
+        _unitOfWork.Repository<Facility>().Update(existingFacility);
+        await _unitOfWork.Complete();
+
+        return new FacilityResponseDto
+        {
+            Message = "Facility updated successfully.",
+            Data = _mapper.Map<FacilityDto>(existingFacility)
+        };
+    }
+
+
+
 
     public async Task<bool> DeleteFacility(int id)
     {
