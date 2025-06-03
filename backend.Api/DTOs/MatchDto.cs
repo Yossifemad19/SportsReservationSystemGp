@@ -19,7 +19,10 @@ namespace backend.Api.DTOs
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
-        
+        public DateOnly? Date { get; set; }
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
+
         // Include simplified player information
         public List<MatchPlayerDto> Players { get; set; }
     }
