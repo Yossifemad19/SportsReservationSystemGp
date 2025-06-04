@@ -192,7 +192,50 @@ public class AuthService : IAuthService
         
         return userRole;
     }
-    
+
+    public async Task<UserProfileDto> UpdateUserProfile(int userId, UserProfileDto userProfile)
+    {
+        var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new Exception($"User with id {userId} not found.");
+        }
+
+        user.FirstName = userProfile.FirstName;
+        user.LastName = userProfile.LastName;
+        user.UserName = userProfile.UserName ?? user.Email.Split('@')[0];
+        user.Email = userProfile.Email;
+        user.PhoneNumber = userProfile.PhoneNumber;
+        _unitOfWork.Repository<User>().Update(user);
+        if (await _unitOfWork.Complete() > 0)
+        {
+            return new UserProfileDto
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                UserName = user.UserName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber
+
+            };
+        }
+
+        return null;
+    }
+
+    public async Task<bool> DeleteUser(int userId)
+    {
+        var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new Exception($"User with id {userId} not found.");
+        }
+
+        _unitOfWork.Repository<User>().Remove(user);
+        return await _unitOfWork.Complete() > 0;
+    }
+
+
     public async Task<string> ForgotPassword(string email)
     {
         var user = await _unitOfWork.Repository<User>().FindAsync(x => x.Email == email);

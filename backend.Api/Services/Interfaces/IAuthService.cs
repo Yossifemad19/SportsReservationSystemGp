@@ -15,6 +15,8 @@ public interface IAuthService
 
     public Task<string> ForgotPassword(string email);
     public Task<string> ResetPassword(PasswordDto passwordDto);
+    public Task<UserProfileDto> UpdateUserProfile(int userId, UserProfileDto userProfile);
+    public  Task<bool> DeleteUser(int userId);
 
 
 }

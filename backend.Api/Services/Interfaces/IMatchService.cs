@@ -12,7 +12,7 @@ namespace backend.Core.Interfaces
         Task<Match> CreateMatchAsync(int creatorUserId, int bookingId, string sportType, int teamSize, string title, string description, int? minSkillLevel, int? maxSkillLevel, bool isPrivate);
         Task<Match> GetMatchByIdAsync(int matchId);
         Task<List<MatchDto>> GetMatchesByUserIdAsync(int userId);
-        Task<List<Match>> GetAvailableMatchesAsync(int userId, string sportType = null);
+        Task<List<MatchDto>> GetAvailableMatchesAsync(int userId, string sportType = null);
         Task<List<Match>> GetCompletedMatchesAsync(int userId);
         Task<bool> CancelMatchAsync(int matchId, int userId);
         Task<bool> CompleteMatchAsync(int matchId);

@@ -146,13 +146,35 @@ namespace backend.Infrastructure.Services
         }
 
 
-        public async Task<List<Match>> GetAvailableMatchesAsync(int userId, string sportType = null)
+        public async Task<List<MatchDto>> GetAvailableMatchesAsync(int userId, string sportType = null)
         {
             try
             {
                 var spec = new AvailableMatchesSpecification(userId, sportType);
                 var matches = await _matchRepository.GetAllWithSpecAsync(spec);
-                return matches.ToList();
+
+                
+                var result = matches.Select(m => new MatchDto
+                {
+                    Id = m.Id,
+                    CreatorUserId = m.CreatorUserId,
+                    BookingId = m.BookingId,
+                    Date = m.Booking?.Date,
+                    StartTime = m.Booking?.StartTime,
+                    EndTime = m.Booking?.EndTime,
+                    SportType = m.SportType,
+                    TeamSize = m.TeamSize,
+                    Status = m.Status.ToString(),
+                    Title = m.Title,
+                    Description = m.Description,
+                    MinSkillLevel = m.MinSkillLevel,
+                    MaxSkillLevel = m.MaxSkillLevel,
+                    IsPrivate = m.IsPrivate,
+                    CreatedAt = m.CreatedAt,
+                    CompletedAt = m.CompletedAt
+                }).ToList();
+
+                return result;
             }
             catch (Exception ex)
             {

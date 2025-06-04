@@ -13,17 +13,24 @@ using backend.Core.Specification;
 
 public class FriendRequestSpec : BaseSpecification<FriendRequest>
 {
+    
     public FriendRequestSpec(int userId, FriendRequestStatus status, bool sentByUser = false)
         : base(fr =>
             (sentByUser ? fr.SenderId == userId : fr.ReceiverId == userId) &&
             fr.Status == status)
     {
+        AddInclude(fr => fr.Sender);
+        
     }
 
+    
     public FriendRequestSpec(int userId)
         : base(fr => (fr.SenderId == userId || fr.ReceiverId == userId) &&
                      fr.Status == FriendRequestStatus.Accepted)
     {
+        AddInclude(fr => fr.Sender);
+        
     }
 }
+
 

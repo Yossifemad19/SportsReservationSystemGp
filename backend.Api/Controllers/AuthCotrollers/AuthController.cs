@@ -68,6 +68,72 @@ public class AuthController: ControllerBase
         return Ok(user);
     }
 
+    [HttpPut("UserProfile")]
+    public async Task<IActionResult> UpdateUserProfile( [FromBody] UserProfileDto userProfile)
+    {
+        var userIdClaim = User.FindFirst("sub")?.Value;
+        if (!int.TryParse(userIdClaim, out int userId) || userId <= 0)
+        {
+            return BadRequest(new ApiResponse(400, "Invalid or missing user ID in token."));
+        }
+
+        if (userProfile == null || userId <= 0)
+        {
+            return BadRequest(new ApiResponse(400, "Invalid user profile data or user ID."));
+        }
+
+        try
+        {
+            var result = await _authService.UpdateUserProfile(userId, userProfile);
+
+            if (result == null)
+            {
+                
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to update the user profile.");
+            }
+
+            return Ok(result); 
+        }
+        catch (Exception ex)
+        {
+            if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound(new { message = ex.Message }); 
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message }); 
+        }
+    }
+
+    //[HttpDelete("{userId}")]
+    //public async Task<IActionResult> DeleteUser(int userId)
+    //{
+    //    try
+    //    {
+    //        var result = await _authService.DeleteUser(userId);
+
+    //        if (result)
+    //        {
+    //            return NoContent(); 
+    //        }
+
+    //        return StatusCode(StatusCodes.Status500InternalServerError,
+    //            new { message = "Failed to delete the user." });
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+    //        {
+    //            return NotFound(new { message = ex.Message }); 
+    //        }
+
+    //        return StatusCode(StatusCodes.Status500InternalServerError,
+    //            new { message = ex.Message }); // 500 Internal Server Error
+    //    }
+    //}
+
+
+
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
     {
