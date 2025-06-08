@@ -20,7 +20,8 @@ public class FriendRequestSpec : BaseSpecification<FriendRequest>
             fr.Status == status)
     {
         AddInclude(fr => fr.Sender);
-        
+        AddInclude(fr => fr.Receiver);
+
     }
 
     
@@ -29,7 +30,8 @@ public class FriendRequestSpec : BaseSpecification<FriendRequest>
                      fr.Status == FriendRequestStatus.Accepted)
     {
         AddInclude(fr => fr.Sender);
-        
+        AddInclude(fr => fr.Receiver);
+
     }
 }
 

@@ -239,9 +239,14 @@ namespace backend.API.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirst("sub")?.Value);
-                var result = await _matchService.RequestToJoinMatchAsync(matchId, userId);
-                
-                return Ok(new { Success = result });
+                var result = await _matchService.JoinMatchAsync(matchId, userId);
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "You have successfully joined the match."
+                });
+
             }
             catch (InvalidOperationException ex)
             {
@@ -254,26 +259,26 @@ namespace backend.API.Controllers
             }
         }
 
-        [HttpPost("{matchId}/respond-join-request")]
-        public async Task<IActionResult> RespondToJoinRequest(int matchId, [FromBody] RespondJoinRequest request)
-        {
-            try
-            {
-                var userId = int.Parse(User.FindFirst("sub")?.Value);
-                var result = await _matchService.RespondToJoinRequestAsync(matchId, request.RequesterId, userId, request.Approve);
+        //[HttpPost("{matchId}/respond-join-request")]
+        //public async Task<IActionResult> RespondToJoinRequest(int matchId, [FromBody] RespondJoinRequest request)
+        //{
+        //    try
+        //    {
+        //        var userId = int.Parse(User.FindFirst("sub")?.Value);
+        //        var result = await _matchService.RespondToJoinRequestAsync(matchId, request.RequesterId, userId, request.Approve);
                 
-                return Ok(new { Success = result });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error responding to join request for match {MatchId}", matchId);
-                return StatusCode(500, "An error occurred while responding to the join request");
-            }
-        }
+        //        return Ok(new { Success = result });
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error responding to join request for match {MatchId}", matchId);
+        //        return StatusCode(500, "An error occurred while responding to the join request");
+        //    }
+        //}
 
         [HttpPost("{matchId}/check-in")]
         public async Task<IActionResult> CheckIn(int matchId)

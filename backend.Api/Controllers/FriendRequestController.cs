@@ -53,9 +53,13 @@ public class FriendRequestController : ControllerBase
         return result.Success ? Ok(result.Message) : BadRequest(result.Message);
     }
 
-    [HttpGet("friend-requests/accepted/{userId}")]
-    public async Task<IActionResult> GetAcceptedFriendRequests(int userId)
+    [HttpGet("friend-requests/accepted")]
+    public async Task<IActionResult> GetAcceptedFriendRequests()
     {
+        if (!int.TryParse(User.FindFirst("sub")?.Value, out int userId)) 
+        {
+            return BadRequest("Invalid user ID.");
+        }
         var requests = await _friendService.GetAcceptedFriendRequestsAsync(userId);
         return Ok(requests);
     }

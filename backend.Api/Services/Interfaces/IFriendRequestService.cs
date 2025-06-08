@@ -12,5 +12,7 @@ public interface IFriendRequestService
     Task<List<FriendRequestDto>> GetSentRequestsAsync(int userId);
     Task<List<FriendRequestDto>> GetReceivedRequestsAsync(int userId);
     Task<List<FriendRequestDto>> GetAcceptedFriendRequestsAsync(int userId);
+    Task<bool> AreFriendsAsync(int userId1, int userId2);
+
 
 }

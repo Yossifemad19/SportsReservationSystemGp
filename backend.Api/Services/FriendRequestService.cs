@@ -99,6 +99,21 @@ public class FriendRequestService : IFriendRequestService
         return _mapper.Map<List<FriendRequestDto>>(requests);
     }
 
+    public async Task<bool> AreFriendsAsync(int userId1, int userId2)
+    {
+        var repo = _unitOfWork.Repository<FriendRequest>();
+
+        var friendship = await repo.FindAsync(fr =>
+            fr.Status == FriendRequestStatus.Accepted &&
+            (
+                (fr.SenderId == userId1 && fr.ReceiverId == userId2) ||
+                (fr.SenderId == userId2 && fr.ReceiverId == userId1)
+            ));
+
+        return friendship != null;
+    }
+
+
 
 
 }

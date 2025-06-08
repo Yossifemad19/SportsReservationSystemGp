@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using backend.Api.DTOs;
+using backend.Api.Services;
+using backend.Api.Services.Interfaces;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
 using backend.Core.Specification;
@@ -20,10 +22,12 @@ namespace backend.Infrastructure.Services
         private readonly IGenericRepository<Booking> _bookingRepository;
         private readonly IGenericRepository<PlayerProfile> _playerProfileRepository;
         private readonly ILogger<MatchService> _logger;
+        private readonly IFriendRequestService _friendRequestService;
+       
 
         public MatchService(
             IUnitOfWork unitOfWork,
-            ILogger<MatchService> logger)
+            ILogger<MatchService> logger, IFriendRequestService friendRequestService)
         {
             _unitOfWork = unitOfWork;
             _matchRepository = _unitOfWork.Repository<Match>();
@@ -32,6 +36,7 @@ namespace backend.Infrastructure.Services
             _bookingRepository = _unitOfWork.Repository<Booking>();
             _playerProfileRepository = _unitOfWork.Repository<PlayerProfile>();
             _logger = logger;
+            _friendRequestService = friendRequestService;
         }
 
         // Match CRUD operations
@@ -273,13 +278,21 @@ namespace backend.Infrastructure.Services
                 {
                     throw new InvalidOperationException("Match not found");
                 }
-                
-                // Check if inviter is creator or player
-                var inviterIsPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == inviterUserId) != null;
-                if (match.CreatorUserId != inviterUserId && !inviterIsPlayer)
+
+
+                if (!await _friendRequestService.AreFriendsAsync(inviterUserId, invitedUserId))
                 {
-                    throw new InvalidOperationException("Only the match creator or players can invite others");
+                    throw new InvalidOperationException("You can only invite friends to the match");
                 }
+
+
+                // Check if inviter is creator or player
+                //var inviterIsPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == inviterUserId) != null;
+                //if (match.CreatorUserId != inviterUserId && !inviterIsPlayer)
+                //{
+                //    throw new InvalidOperationException("Only the match creator or players can invite others");
+                //}
+
                 
                 // Check if match is open
                 if (match.Status != MatchStatus.Open)
@@ -435,49 +448,80 @@ namespace backend.Infrastructure.Services
             }
         }
 
-        public async Task<bool> RespondToJoinRequestAsync(int matchId, int requesterId, int responderId, bool approve)
+        public async Task<bool> JoinMatchAsync(int matchId, int userId)
         {
             try
             {
-                // Check if responder is creator
                 var match = await _matchRepository.GetByIdAsync(matchId);
                 if (match == null)
                 {
                     throw new InvalidOperationException("Match not found");
                 }
-                
-                if (match.CreatorUserId != responderId)
+
+                // Check if user is already in or invited to the match
+                var existingPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
+                if (existingPlayer != null)
                 {
-                    throw new InvalidOperationException("Only the match creator can respond to join requests");
+                    if (match.IsPrivate && existingPlayer.Status != ParticipationStatus.Invited)
+                    {
+                        throw new InvalidOperationException("You must be invited to join a private match");
+                    }
+
+                    if (existingPlayer.Status == ParticipationStatus.Accepted)
+                    {
+                        throw new InvalidOperationException("You are already part of this match");
+                    }
+
+                    // Update their status to Joined if they were invited
+                    existingPlayer.Status = ParticipationStatus.Accepted;
+                    await _unitOfWork.Complete();
+                    return true;
                 }
-                
-                // Check if match is still open
+
+                // For private matches: block join if not previously invited
+                if (match.IsPrivate)
+                {
+                    throw new InvalidOperationException("You must be invited to join this private match");
+                }
+
+                // Check if match is open
                 if (match.Status != MatchStatus.Open)
                 {
-                    throw new InvalidOperationException("Cannot respond to join request for a match that is not open");
+                    throw new InvalidOperationException("Cannot join a match that is not open");
                 }
-                
-                // Find request
-                var request = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == requesterId && mp.Status == ParticipationStatus.Requested);
-                if (request == null)
+
+                // Check if match is full
+                var currentPlayerCount = (await _matchPlayerRepository.GetAllAsync())
+                    .Count(mp => mp.MatchId == matchId && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
+
+                if (currentPlayerCount >= match.TeamSize * 2)
                 {
-                    throw new InvalidOperationException("Join request not found");
+                    throw new InvalidOperationException("Match is full");
                 }
-                
-                // Update request status
-                request.Status = approve ? ParticipationStatus.Approved : ParticipationStatus.Rejected;
-                request.ResponseAt = DateTime.UtcNow;
-                _matchPlayerRepository.Update(request);
+
+                // Skip skill check (you can re-add if needed)
+
+                // Add player directly to match
+                var player = new MatchPlayer
+                {
+                    MatchId = matchId,
+                    UserId = userId,
+                    Status = ParticipationStatus.Accepted,
+                    InvitedAt = DateTime.UtcNow
+                };
+
+                _matchPlayerRepository.Add(player);
                 await _unitOfWork.Complete();
-                
+
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error responding to join request for match {MatchId} by user {ResponderId} with response {Approve}", matchId, responderId, approve);
+                _logger.LogError(ex, "Error joining match {MatchId} by user {UserId}", matchId, userId);
                 throw;
             }
         }
+
 
         public async Task<bool> CheckInPlayerAsync(int matchId, int userId)
         {
