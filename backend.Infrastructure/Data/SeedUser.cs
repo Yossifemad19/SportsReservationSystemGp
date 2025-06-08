@@ -13,13 +13,13 @@ public class SeedUsers
 {
     public static async Task<int> SeedUsersData(IUnitOfWork unitOfWork, string userPasswordHash)
     {
-        var userRole = await unitOfWork.Repository<UserRole>().GetFirstOrDefaultAsync(new UserRoleSpecification("User"));
+        var userRole = await unitOfWork.Repository<UserRole>().GetFirstOrDefaultAsync(new UserRoleSpecification("Customer"));
         if (userRole == null)
         {
             userRole = new UserRole
             {
-                RoleName = "User",
-                Description = "User"
+                RoleName = "Customer",
+                Description = "Customer"
             };
             unitOfWork.Repository<UserRole>().Add(userRole);
             await unitOfWork.Complete();
@@ -37,6 +37,23 @@ public class SeedUsers
                PhoneNumber = "01111885599",
                PasswordHash = userPasswordHash,
                UserRoleId = userRole.Id,
+               PlayerProfile = new PlayerProfile
+               {
+                   SkillLevel = 5, // Default skill level
+                   PreferredPlayingStyle = "Balanced",
+                   PreferredSports = new List<string>(),
+                   PreferredPlayingTimes = new List<string>(),
+                   PrefersCompetitivePlay = true,
+                   PrefersCasualPlay = true,
+                   PreferredTeamSize = 2,
+                   WeeklyAvailability = new Dictionary<DayOfWeek, List<TimeSpan>>(),
+                   SportSpecificSkills = new Dictionary<string, int>(),
+                   FrequentPartners = new List<string>(),
+                   BlockedPlayers = new List<string>(),
+                   MatchesPlayed = 0,
+                   MatchesWon = 0,
+                   LastUpdated = DateTime.UtcNow
+               }
            },
            new User
            {
@@ -48,6 +65,23 @@ public class SeedUsers
                UserRoleId = userRole.Id,
                FirstName = "second",
                LastName = "user",
+               PlayerProfile = new PlayerProfile
+               {
+               SkillLevel = 5, // Default skill level
+               PreferredPlayingStyle = "Balanced",
+               PreferredSports = new List<string>(),
+               PreferredPlayingTimes = new List<string>(),
+               PrefersCompetitivePlay = true,
+               PrefersCasualPlay = true,
+               PreferredTeamSize = 2,
+               WeeklyAvailability = new Dictionary<DayOfWeek, List<TimeSpan>>(),
+               SportSpecificSkills = new Dictionary<string, int>(),
+               FrequentPartners = new List<string>(),
+               BlockedPlayers = new List<string>(),
+               MatchesPlayed = 0,
+               MatchesWon = 0,
+               LastUpdated = DateTime.UtcNow
+           }
            }
        };
 

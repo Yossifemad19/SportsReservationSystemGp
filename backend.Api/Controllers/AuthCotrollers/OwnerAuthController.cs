@@ -24,10 +24,10 @@ public class OwnerAuthController : ControllerBase
     [HttpPost("OwnerRegister")]
     public async Task<IActionResult> OwnerRegister([FromBody] OwnerRegisterDto ownerRegisterDto)
     {
-        var token = await _OwnerAuthService.OwnerRegister(ownerRegisterDto, "Owner");
+        var result = await _OwnerAuthService.OwnerRegister(ownerRegisterDto, "Owner");
 
-        if (string.IsNullOrEmpty(token))
-            return BadRequest(new ApiResponse(400, "Failed to register owner"));
+        if (!result.Success)
+            return BadRequest(result.Message);
 
         var owner = new
         {
@@ -41,7 +41,7 @@ public class OwnerAuthController : ControllerBase
         return Ok(new
         {
             message = "Registered successfully",
-            token = token,
+            token = result.Data,
             owner = owner
         });
     }
@@ -50,17 +50,14 @@ public class OwnerAuthController : ControllerBase
     public async Task<IActionResult> OwnerLogin([FromBody] OwnerLoginDto ownerLoginDto)
     {
         var result = await _OwnerAuthService.OwnerLogin(ownerLoginDto);
-        if (result == null)
-            return BadRequest(new ApiResponse(400, "Username or password is incorrect"));
+        if (!result.Success)
+            return BadRequest(result.Message);
 
         
-        if (!bool.TryParse(result.IsApproved, out var isApproved) || !isApproved)
+        if (!bool.TryParse(result.Data.IsApproved, out var isApproved) || !isApproved)
             return Unauthorized(new ApiResponse(401, "Your account is not approved yet. Please wait for admin approval."));
 
-        return Ok(new
-        {
-            Data = result
-        });
+        return Ok(result);
     }
 
 }

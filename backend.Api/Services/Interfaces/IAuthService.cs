@@ -1,22 +1,23 @@
 using backend.Api.DTOs;
 using backend.Core.Entities;
 using Microsoft.AspNetCore.Identity.Data;
+using System.Threading.Tasks;
 
-namespace backend.Api.Services;
-
-public interface IAuthService
+namespace backend.Api.Services
 {
-    public Task<string> Register(RegisterDto registerDto, string roleName);
-    public Task<UserResponseDto> Login(LoginDto loginDto);
-    public Task<string> OwnerRegister(OwnerRegisterDto ownerRegisterDto, string roleName);
-    public Task<OwnerResponseDto> OwnerLogin(OwnerLoginDto ownerLoginDto);
-    
-    public Task<GetAllResponse> GetUserById(int id);
+    public interface IAuthService
+    {
+        Task<ServiceResult<string>> Register(RegisterDto registerDto, string roleName);
+        Task<ServiceResult<UserResponseDto>> Login(LoginDto loginDto);
+        Task<ServiceResult<string>> OwnerRegister(OwnerRegisterDto ownerRegisterDto, string roleName);
+        Task<ServiceResult<OwnerResponseDto>> OwnerLogin(OwnerLoginDto ownerLoginDto);
 
-    public Task<string> ForgotPassword(string email);
-    public Task<string> ResetPassword(PasswordDto passwordDto);
-    public Task<UserProfileDto> UpdateUserProfile(int userId, UserProfileDto userProfile);
-    public  Task<bool> DeleteUser(int userId);
+        Task<ServiceResult<GetAllResponse>> GetUserById(int id);
+        Task<ServiceResult<string>> ForgotPassword(string email);
+        Task<ServiceResult<string>> ResetPassword(PasswordDto passwordDto);
+        Task<ServiceResult<UserProfileDto>> UpdateUserProfile(int userId, UserProfileDto userProfile);
+        Task<ServiceResult<bool>> DeleteUser(int userId);
 
-
+        Task<bool> IsEmailExist(string email);
+    }
 }
