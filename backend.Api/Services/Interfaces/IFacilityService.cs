@@ -1,16 +1,13 @@
-﻿
-using backend.Api.DTOs;
+﻿using backend.Api.DTOs;
 using backend.Core.Entities;
 
 namespace backend.Api.Services;
 
 public interface IFacilityService
 {
-    Task<FacilityDto?> GetFacilityById(int id);
-    Task<FacilityResponseDto> CreateFacility(FacilityDto FacilityDto,string ownerId);
-    // Task<bool> UpdateFacility(FacilityDto FacilityDto);
-    Task<bool> DeleteFacility(int id);
-    Task<FacilityResponseDto?> UpdateFacility(FacilityDto facilityDto, string ownerId);
-
-    Task<List<FacilityDto>> GetAllFacilities();
+    Task<ServiceResult<FacilityDto>> GetFacilityById(int id);
+    Task<ServiceResult<FacilityDto>> CreateFacility(FacilityDto facilityDto, string ownerId);
+    Task<ServiceResult<FacilityDto>> UpdateFacility(FacilityDto facilityDto, string ownerId);
+    Task<ServiceResult<bool>> DeleteFacility(int id);
+    Task<ServiceResult<List<FacilityDto>>> GetAllFacilities();
 }

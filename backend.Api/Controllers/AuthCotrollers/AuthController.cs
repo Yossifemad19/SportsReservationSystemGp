@@ -29,8 +29,8 @@ public class AuthController: ControllerBase
        
         var result = await _authService.Register(registerDto, "Customer");
         
-        if(String.IsNullOrEmpty(result))
-            return BadRequest(new ApiResponse(400,"Failed to register user"));
+        if(!result.Success)
+            return BadRequest(result.Message);
 
 
         return Ok(new
@@ -40,7 +40,7 @@ public class AuthController: ControllerBase
             Email = registerDto.Email,
             phoneNumber = registerDto.PhoneNumber,
             Role = "Customer",
-            token = result
+            token = result.Data
         });
     }
 
@@ -48,24 +48,21 @@ public class AuthController: ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
         var result = await _authService.Login(loginDto);
-        if (result == null)
-            return BadRequest(new ApiResponse(400, "Username or password is incorrect"));
+        if (!result.Success)
+            return BadRequest(result.Message);
 
-        return Ok(new 
-        {
-            Data = result
-        });
+        return Ok(result);
     }
 
     [HttpGet("UserProfile")]
     public async Task<IActionResult> GetUserById()
     {
         var userId = int.Parse(User.FindFirst("sub")?.Value);
-        var user = await _authService.GetUserById(userId);
-        if (user == null)
-            return NotFound(new ApiResponse(404, "User not found"));
+        var result = await _authService.GetUserById(userId);
+        if (!result.Success)
+            return NotFound(result.Message);
 
-        return Ok(user);
+        return Ok(result);
     }
 
     [HttpPut("UserProfile")]
@@ -86,10 +83,9 @@ public class AuthController: ControllerBase
         {
             var result = await _authService.UpdateUserProfile(userId, userProfile);
 
-            if (result == null)
+            if (!result.Success)
             {
-                
-                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to update the user profile.");
+                return BadRequest(result.Message);
             }
 
             return Ok(result); 
@@ -139,8 +135,8 @@ public class AuthController: ControllerBase
     {
 
         var result = await _authService.ForgotPassword(forgotPasswordDto.Email);
-        if (string.IsNullOrEmpty(result))
-            return BadRequest(new ApiResponse(400, "Failed to send reset password link"));
+        if (!result.Success)
+            return BadRequest(result.Message);
 
         return Ok(result);
     }
@@ -149,7 +145,7 @@ public class AuthController: ControllerBase
     public async Task<IActionResult> ResetPassword([FromBody] PasswordDto passwordDto)
     {
         var result = await _authService.ResetPassword(passwordDto);
-        if (string.IsNullOrEmpty(result))
+        if (!result.Success)
             return BadRequest(new ApiResponse(400, "Failed to reset password"));
 
         return Ok(result);

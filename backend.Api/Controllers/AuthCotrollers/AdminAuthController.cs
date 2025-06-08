@@ -24,74 +24,72 @@ public class AdminAuthController:ControllerBase
     public async Task<ActionResult> AdminLogin([FromBody] AdminLoginDto adminLoginDto)
     {
         var result = await _adminService.AdminLogin(adminLoginDto);
-        if(result == null)
-            return BadRequest(new ApiResponse(400,"Username or password is incorrect"));
+        if(!result.Success)
+            return BadRequest(result.Message);
         
-        return Ok(new 
-        {
-            Data = result
-        });
+        return Ok(result);
     }
 
     [HttpPost("approve/{ownerId}")]
     public async Task<IActionResult> ApproveOwner(int ownerId)
     {
         var result = await _adminService.ApproveOwner(ownerId);
-        if (!result)
-            return BadRequest(new
-            {
-                message = "Failed to approve owner or owner not found."
-            });
+        if (!result.Success)
+            return BadRequest(result.Message);
 
-        return Ok(new
-        {
-            message = "Owner approved successfully."
-        });
+        return Ok(result);
     }
 
     [HttpGet("users")]
     public async Task<IActionResult> GetAllUsers()
     {
-        var users = await _adminService.GetAllUsers();
-        return Ok(users);
+        var result = await _adminService.GetAllUsers();
+        if(!result.Success)
+            return BadRequest(result.Message);
+        return Ok(result);
     }
 
 
     [HttpGet("owners")]
     public async Task<IActionResult> GetAllOwners()
     {
-        var owners = await _adminService.GetAllOwners();
-        return Ok(owners);
+        var result = await _adminService.GetAllOwners();
+        if(!result.Success)
+            return BadRequest(result.Message);
+        return Ok(result);
     }
 
     [HttpPost("rejectOwner/{ownerId}")]
     public async Task<IActionResult> RejectOwner(int ownerId)
     {
         var result = await _adminService.RejectOwner(ownerId);
-        if (!result) return BadRequest(new { message = "Failed to reject owner" });
+        if (!result.Success) return BadRequest(result.Message);
 
-        return Ok(new { message = "Owner rejected successfully" });
+        return Ok(result);
     }
     [HttpGet("unapprovedOwners")]
     public async Task<IActionResult> GetUnapprovedOwners()
     {
-        var unapprovedOwners = await _adminService.GetAllUnApprovedOwners();
-        return Ok(unapprovedOwners);
+        var result = await _adminService.GetAllUnApprovedOwners();
+        if(!result.Success) return BadRequest(result.Message);
+        return Ok(result);
     }
 
 
     [HttpGet("GetOwnerById")]
     public async Task<IActionResult> GetOwnerById(int id)
     {
-        var owners = await _adminService.GetOwnerById(id);
-        return Ok(owners);
+        var result = await _adminService.GetOwnerById(id);
+        if(!result.Success) return BadRequest(result.Message);
+        return Ok(result);
     }
 
     [HttpGet("GetUserById")]
     public async Task<IActionResult> GetUserById(int id)
     {
-        var users = await _adminService.GetUserById(id);
-        return Ok(users);
+        var result = await _adminService.GetUserById(id);
+        if(!result.Success) return BadRequest(result.Message);
+        return Ok(result);
     }
 
 }
