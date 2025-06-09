@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
 using backend.Api.Services.Interfaces;
+using backend.Api.Hubs;
 
 namespace backend.Api;
 
@@ -105,6 +106,7 @@ public class Program
         builder.Services.AddScoped<IMatchService, MatchService>();
         builder.Services.AddLogging();
         builder.Services.AddScoped<IFriendRequestService, FriendRequestService>();
+        builder.Services.AddSignalR();
 
 
 
@@ -212,6 +214,7 @@ public class Program
 
 
         app.MapControllers();
+        app.MapHub<NotificationHub>("/notificationHub");
 
 
         using var scope = app.Services.CreateScope();
@@ -290,6 +293,14 @@ public class Program
                 logger.LogInformation("Owners data seeding failed");
             else
                 logger.LogError("users data was not seeded");
+
+            var BookingResult = await SeedBookings.SeedBookingsData(unitOfWork);
+            if (BookingResult > 0)
+                logger.LogInformation("Successfully seeded Bookings data");
+            else if (BookingResult == 0)
+                logger.LogInformation("Bookings already seeded");
+            else
+                logger.LogError("Error occurred while seeding courts");
 
         }
         catch (Exception ex)

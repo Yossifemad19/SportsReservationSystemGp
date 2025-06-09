@@ -57,7 +57,11 @@ public class AuthController: ControllerBase
     [HttpGet("UserProfile")]
     public async Task<IActionResult> GetUserById()
     {
-        var userId = int.Parse(User.FindFirst("sub")?.Value);
+        var userIdClaim = User.FindFirst("sub")?.Value;
+        if (!int.TryParse(userIdClaim, out int userId) || userId <= 0)
+        {
+            return BadRequest(new ApiResponse(400, "Invalid or missing user ID in token."));
+        }
         var result = await _authService.GetUserById(userId);
         if (!result.Success)
             return NotFound(result.Message);

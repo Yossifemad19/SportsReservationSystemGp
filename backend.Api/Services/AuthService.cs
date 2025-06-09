@@ -89,9 +89,9 @@ public class AuthService : IAuthService
             Id = user.Id,
             Name = $"{user.FirstName} {user.LastName}",
             Email = user.Email,
-            Token = _tokenService.GenerateToken(user),
             Role = userRole?.RoleName ?? "Unknown",
-            Message = "Logged in successfully"
+            Message = "Logged in successfully",
+            Token = _tokenService.GenerateToken(user)
         };
 
         return ServiceResult<UserResponseDto>.Ok(dto);

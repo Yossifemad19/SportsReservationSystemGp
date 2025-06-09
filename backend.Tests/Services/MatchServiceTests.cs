@@ -52,7 +52,7 @@ namespace backend.Tests.Services
                 Id = 1,
                 CreatorUserId = 1,
                 BookingId = 1,
-                SportType = "Football",
+                SportId = 1,
                 TeamSize = 5,
                 Title = "Test Match",
                 Description = "Test Description",
@@ -70,13 +70,13 @@ namespace backend.Tests.Services
                 .ReturnsAsync(1);
 
             // Act
-            var result = await _matchService.CreateMatchAsync(1, 1, "Football", 5, "Test Match", "Test Description", null, null, false);
+            var result = await _matchService.CreateMatchAsync(1, 1, 1, 5, "Test Match", "Test Description", null, null);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(1, result.CreatorUserId);
             Assert.Equal(1, result.BookingId);
-            Assert.Equal("Football", result.SportType);
+            Assert.Equal(1, result.SportId);
             Assert.Equal(5, result.TeamSize);
             Assert.Equal("Test Match", result.Title);
             Assert.Equal(MatchStatus.Open, result.Status);
@@ -91,7 +91,7 @@ namespace backend.Tests.Services
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _matchService.CreateMatchAsync(1, 1, "Football", 5, "Test Match", "Test Description", null, null, false));
+                _matchService.CreateMatchAsync(1, 1, 1, 5, "Test Match", "Test Description", null, null));
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace backend.Tests.Services
                 Id = 1,
                 CreatorUserId = 1,
                 BookingId = 1,
-                SportType = "Football",
+                SportId = 1,
                 TeamSize = 5,
                 Title = "Test Match",
                 Description = "Test Description",
@@ -134,7 +134,7 @@ namespace backend.Tests.Services
                     Id = 1,
                     CreatorUserId = 1,
                     BookingId = 1,
-                    SportType = "Football",
+                    SportId = 1,
                     TeamSize = 5,
                     Title = "Test Match 1",
                     Status = MatchStatus.Open,
@@ -145,7 +145,7 @@ namespace backend.Tests.Services
                     Id = 2,
                     CreatorUserId = 1,
                     BookingId = 2,
-                    SportType = "Basketball",
+                    SportId = 2,
                     TeamSize = 3,
                     Title = "Test Match 2",
                     Status = MatchStatus.Open,

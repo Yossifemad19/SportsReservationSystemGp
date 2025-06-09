@@ -11,6 +11,7 @@ namespace backend.Core.Specification
         public Expression<Func<T, bool>> Criteria { get; set; }
         public List<Expression<Func<T, object>>> Includes { get; } = new List<Expression<Func<T, object>>>();
         public List<string> IncludeStrings { get; } = new List<string>();
+        public Expression<Func<T, object>> OrderByDescending { get; set; }
 
         public BaseSpecification()
         {

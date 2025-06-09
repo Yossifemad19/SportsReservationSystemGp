@@ -6,27 +6,20 @@ namespace backend.Core.Specification
 {
     public class AvailableMatchesSpecification : BaseSpecification<Match>
     {
-        public AvailableMatchesSpecification(int userId, string sportType = null) : base()
+        public AvailableMatchesSpecification(int userId, int? sportId = null) : base()
         {
-            // Base criteria: match is open
-            Criteria = m => m.Status == MatchStatus.Open;
+            // Match is open and not created by the user
+            Criteria = m => m.Status == MatchStatus.Open && 
+                           m.CreatorUserId != userId &&
+                           (!sportId.HasValue || m.SportId == sportId.Value);
             
-            // Add sport type filter if provided
-            if (!string.IsNullOrEmpty(sportType))
-            {
-                // Use the And method directly
-                Criteria = And(Criteria, m => m.SportType == sportType);
-            }
-            
-            // Exclude matches where user is already a player
-            Criteria = And(Criteria, m => !m.Players.Any(mp => mp.UserId == userId));
-            
-            // Include only public matches or private matches where user is invited
-            Criteria = And(Criteria, m => !m.IsPrivate || 
-                                          m.Players.Any(mp => mp.UserId == userId && mp.Status == ParticipationStatus.Invited));
-            
+            // Include related data
             AddInclude(m => m.Players);
             AddInclude(m => m.Booking);
+            AddInclude(m => m.Sport);
+            
+            // Order by creation date
+            OrderByDescending = m => m.CreatedAt;
         }
     }
 }

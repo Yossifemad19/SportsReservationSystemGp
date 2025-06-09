@@ -23,7 +23,11 @@ public class MappingProfiles: Profile
         CreateMap<Sport, SportDto>();
 
         CreateMap<Match, MatchDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.SportName, opt => opt.MapFrom(src => src.Sport.Name))
+            .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Booking.Date))
+            .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.Booking.StartTime))
+            .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.Booking.EndTime));
         CreateMap<MatchPlayer, MatchPlayerDto>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => 
                 src.User != null ? $"{src.User.FirstName}_{src.User.LastName}" : "Unknown"))

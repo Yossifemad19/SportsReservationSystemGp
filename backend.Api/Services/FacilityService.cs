@@ -126,15 +126,40 @@ public class FacilityService : IFacilityService
             : ServiceResult<bool>.Fail("Failed to delete facility.");
     }
 
-    public async Task<ServiceResult<List<FacilityDto>>> GetAllFacilities()
+    public async Task<ServiceResult<List<FacilityDto>>> GetAllFacilities(bool isOwner, string ownerId)
     {
-        var facilities = await _unitOfWork.Repository<Facility>()
+        if (isOwner)
+        {
+            if (!int.TryParse(ownerId, out var ownerIdInt))
+                return ServiceResult<List<FacilityDto>>.Fail("Invalid owner ID.");
+
+            // Get IQueryable to build query
+            var query = _unitOfWork.Repository<Facility>().Query();
+
+            // Filter facilities by owner ID
+            query = query.Where(f => f.OwnerId == ownerIdInt);
+
+            // Include Address navigation property
+            query = query.Include(f => f.Address);
+
+            // Execute query
+            var ownedFacilities = await query.ToListAsync();
+
+            var ownedDtos = _mapper.Map<List<FacilityDto>>(ownedFacilities);
+            return ServiceResult<List<FacilityDto>>.Ok(ownedDtos);
+        }
+
+        // Not owner? Just include Address and get all facilities
+        var allFacilities = await _unitOfWork.Repository<Facility>()
             .GetAllIncludingAsync(f => f.Address);
 
-        var dtos = _mapper.Map<List<FacilityDto>>(facilities);
-
-        return ServiceResult<List<FacilityDto>>.Ok(dtos);
+        var allDtos = _mapper.Map<List<FacilityDto>>(allFacilities);
+        return ServiceResult<List<FacilityDto>>.Ok(allDtos);
     }
+
+
+
+
 
     private bool IsWithinCairo(decimal latitude, decimal longitude)
     {

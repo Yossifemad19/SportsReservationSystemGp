@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using backend.Api.DTOs;
+using backend.Api.Hubs;
 using backend.Api.Services.Interfaces;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
 using backend.Core.Specification;
+using Microsoft.AspNetCore.SignalR;
 
 namespace backend.Api.Services;
 
@@ -11,11 +13,13 @@ public class FriendRequestService : IFriendRequestService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IHubContext<NotificationHub> _hubContext;
 
-    public FriendRequestService(IUnitOfWork unitOfWork , IMapper mapper)
+    public FriendRequestService(IUnitOfWork unitOfWork , IMapper mapper , IHubContext<NotificationHub> hubContext)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _hubContext = hubContext;
 
     }
 
@@ -24,7 +28,6 @@ public class FriendRequestService : IFriendRequestService
         if (senderId == receiverId)
             return (false, "You cannot send a friend request to yourself.");
 
-        
         var existing = await _unitOfWork.Repository<FriendRequest>()
             .FindAsync(fr => (fr.SenderId == senderId && fr.ReceiverId == receiverId) ||
                              (fr.SenderId == receiverId && fr.ReceiverId == senderId));
@@ -37,10 +40,21 @@ public class FriendRequestService : IFriendRequestService
             ReceiverId = receiverId,
             Status = FriendRequestStatus.Pending
         };
+
         _unitOfWork.Repository<FriendRequest>().Add(request);
         await _unitOfWork.Complete();
+
+        // 🔔 Notify receiver via SignalR
+        await _hubContext.Clients.User(receiverId.ToString())
+            .SendAsync("ReceiveNotification", new
+            {
+                type = "FriendRequestReceived",
+                fromUserId = senderId
+            });
+
         return (true, "Friend request sent.");
     }
+
     public async Task<(bool Success, string Message)> AcceptFriendRequestAsync(int requestId, int userId)
     {
         var request = await _unitOfWork.Repository<FriendRequest>().GetByIdAsync(requestId);
@@ -48,9 +62,19 @@ public class FriendRequestService : IFriendRequestService
             return (false, "Friend request not found or not authorized.");
         if (request.Status != FriendRequestStatus.Pending)
             return (false, "Friend request is not pending.");
+
         request.Status = FriendRequestStatus.Accepted;
         _unitOfWork.Repository<FriendRequest>().Update(request);
         await _unitOfWork.Complete();
+
+        // 🔔 Notify sender via SignalR
+        await _hubContext.Clients.User(request.SenderId.ToString())
+            .SendAsync("ReceiveNotification", new
+            {
+                type = "FriendRequestAccepted",
+                fromUserId = request.ReceiverId
+            });
+
         return (true, "Friend request accepted.");
     }
 
@@ -59,22 +83,28 @@ public class FriendRequestService : IFriendRequestService
         var request = await _unitOfWork.Repository<FriendRequest>().GetByIdAsync(requestId);
         if (request == null || request.ReceiverId != userId)
             return (false, "Friend request not found or not authorized.");
-
         if (request.Status != FriendRequestStatus.Pending)
             return (false, "Friend request is not pending.");
 
         request.Status = FriendRequestStatus.Rejected;
         _unitOfWork.Repository<FriendRequest>().Update(request);
         await _unitOfWork.Complete();
+
+        // 🔔 Optional: Notify sender about rejection
+        await _hubContext.Clients.User(request.SenderId.ToString())
+            .SendAsync("ReceiveNotification", new
+            {
+                type = "FriendRequestRejected",
+                fromUserId = request.ReceiverId
+            });
+
         return (true, "Friend request rejected.");
     }
-
 
     public async Task<List<FriendRequestDto>> GetPendingRequestsAsync(int userId)
     {
         var spec = new FriendRequestSpec(userId, FriendRequestStatus.Pending);
         var requests = await _unitOfWork.Repository<FriendRequest>().GetAllWithSpecAsync(spec);
-
         return _mapper.Map<List<FriendRequestDto>>(requests);
     }
 
@@ -102,7 +132,6 @@ public class FriendRequestService : IFriendRequestService
     public async Task<bool> AreFriendsAsync(int userId1, int userId2)
     {
         var repo = _unitOfWork.Repository<FriendRequest>();
-
         var friendship = await repo.FindAsync(fr =>
             fr.Status == FriendRequestStatus.Accepted &&
             (
