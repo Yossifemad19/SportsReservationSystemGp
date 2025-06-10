@@ -9,13 +9,13 @@ namespace backend.Api.DTOs
         public int Id { get; set; }
         public int CreatorUserId { get; set; }
         public int BookingId { get; set; }
-        public string SportType { get; set; }
+        public int SportId { get; set; }
+        public string SportName { get; set; }
         public int TeamSize { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public int? MinSkillLevel { get; set; }
         public int? MaxSkillLevel { get; set; }
-        public bool IsPrivate { get; set; }
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }

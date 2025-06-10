@@ -79,6 +79,13 @@ public class AppDbContext : DbContext
             .HasForeignKey(m => m.BookingId)
             .OnDelete(DeleteBehavior.Restrict);
             
+        modelBuilder.Entity<Match>()
+            .HasOne(m => m.Sport)
+            .WithMany()
+            .HasForeignKey(m => m.SportId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
+            
         // MatchPlayer configuration
         modelBuilder.Entity<MatchPlayer>().ToTable("MatchPlayers");
         modelBuilder.Entity<MatchPlayer>()

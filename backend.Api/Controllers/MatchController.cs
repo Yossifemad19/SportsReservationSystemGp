@@ -9,6 +9,8 @@ using backend.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
+using backend.Api.Errors;
 
 namespace backend.API.Controllers
 {
@@ -20,43 +22,59 @@ namespace backend.API.Controllers
         private readonly IMatchService _matchService;
         private readonly IMapper _mapper;
         private readonly ILogger<MatchController> _logger;
+        private readonly IBookingRepository _bookingRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public MatchController(IMatchService matchService, IMapper mapper, ILogger<MatchController> logger)
+        public MatchController(IMatchService matchService, IMapper mapper, ILogger<MatchController> logger, IBookingRepository bookingRepository, IUnitOfWork unitOfWork)
         {
             _matchService = matchService;
             _mapper = mapper;
             _logger = logger;
+            _bookingRepository = bookingRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> CreateMatch([FromBody] CreateMatchRequest request)
         {
             try
             {
                 var userId = int.Parse(User.FindFirst("sub")?.Value);
+                var booking = await _bookingRepository.GetBookingWithDetailsAsync(request.BookingId);
+                if (booking == null)
+                {
+                    return NotFound(new ApiResponse(404, "Booking not found"));
+                }
+
+                if (booking.UserId != userId)
+                {
+                    return BadRequest(new ApiResponse(400, "You can only create matches for your own bookings"));
+                }
+
+                if (booking.Court == null)
+                {
+                    return BadRequest(new ApiResponse(400, "The booking's court information is missing"));
+                }
+
+                var sportId = booking.Court.SportId;
                 var match = await _matchService.CreateMatchAsync(
                     userId,
                     request.BookingId,
-                    request.SportType,
+                    sportId,
                     request.TeamSize,
                     request.Title,
                     request.Description,
                     request.MinSkillLevel,
-                    request.MaxSkillLevel,
-                    request.IsPrivate
+                    request.MaxSkillLevel
                 );
-                
+
                 var matchDto = _mapper.Map<MatchDto>(match);
                 return Ok(matchDto);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating match");
-                return StatusCode(500, "An error occurred while creating the match");
+                return StatusCode(500, new ApiResponse(500, "An error occurred while creating the match"));
             }
         }
 
@@ -100,15 +118,13 @@ namespace backend.API.Controllers
         }
 
         [HttpGet("available")]
-        public async Task<IActionResult> GetAvailableMatches([FromQuery] string sportType)
+        public async Task<IActionResult> GetAvailableMatches([FromQuery] int? sportId = null)
         {
             try
             {
                 var userId = int.Parse(User.FindFirst("sub")?.Value);
-                var matches = await _matchService.GetAvailableMatchesAsync(userId, sportType);
-                
-                var matchDtos = _mapper.Map<IEnumerable<MatchDto>>(matches);
-                return Ok(matchDtos);
+                var matches = await _matchService.GetAvailableMatchesAsync(userId, sportId);
+                return Ok(matches);
             }
             catch (Exception ex)
             {
@@ -452,13 +468,11 @@ namespace backend.API.Controllers
     public class CreateMatchRequest
     {
         public int BookingId { get; set; }
-        public string SportType { get; set; }
         public int TeamSize { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public int? MinSkillLevel { get; set; }
         public int? MaxSkillLevel { get; set; }
-        public bool IsPrivate { get; set; }
     }
 
     public class InvitePlayerRequest

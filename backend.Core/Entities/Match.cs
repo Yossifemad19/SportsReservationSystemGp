@@ -19,7 +19,9 @@ namespace backend.Core.Entities
         public Booking Booking { get; set; }
         
         [Required]
-        public string SportType { get; set; }
+        public int SportId { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Sport Sport { get; set; }
         
         [Required]
         public int TeamSize { get; set; }
@@ -32,8 +34,6 @@ namespace backend.Core.Entities
         
         public int? MinSkillLevel { get; set; }
         public int? MaxSkillLevel { get; set; }
-        
-        public bool IsPrivate { get; set; }
         
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -10,4 +10,5 @@ public interface ISpecification<T> where T : BaseEntity
     Expression<Func<T, bool>> Criteria { get; }
     List<Expression<Func<T, object>>> Includes { get; }
     List<string> IncludeStrings { get; } // For nested includes using string paths
+    Expression<Func<T, object>> OrderByDescending { get; }
 }

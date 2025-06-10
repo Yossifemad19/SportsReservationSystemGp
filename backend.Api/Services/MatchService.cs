@@ -7,7 +7,7 @@ using backend.Core.Entities;
 using backend.Core.Interfaces;
 using backend.Core.Specification;
 using Microsoft.Extensions.Logging;
-
+using AutoMapper;
 
 namespace backend.Infrastructure.Services
 {
@@ -20,10 +20,12 @@ namespace backend.Infrastructure.Services
         private readonly IGenericRepository<Booking> _bookingRepository;
         private readonly IGenericRepository<PlayerProfile> _playerProfileRepository;
         private readonly ILogger<MatchService> _logger;
+        private readonly IMapper _mapper;
 
         public MatchService(
             IUnitOfWork unitOfWork,
-            ILogger<MatchService> logger)
+            ILogger<MatchService> logger,
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _matchRepository = _unitOfWork.Repository<Match>();
@@ -32,10 +34,11 @@ namespace backend.Infrastructure.Services
             _bookingRepository = _unitOfWork.Repository<Booking>();
             _playerProfileRepository = _unitOfWork.Repository<PlayerProfile>();
             _logger = logger;
+            _mapper = mapper;
         }
 
         // Match CRUD operations
-        public async Task<Match> CreateMatchAsync(int creatorUserId, int bookingId, string sportType, int teamSize, string title, string description, int? minSkillLevel, int? maxSkillLevel, bool isPrivate)
+        public async Task<Match> CreateMatchAsync(int creatorUserId, int bookingId, int sportId, int teamSize, string title, string description, int? minSkillLevel, int? maxSkillLevel)
         {
             try
             {
@@ -53,17 +56,23 @@ namespace backend.Infrastructure.Services
                     throw new InvalidOperationException("A match already exists for this booking");
                 }
 
+                // Validate sport exists
+                var sport = await _unitOfWork.Repository<Sport>().GetByIdAsync(sportId);
+                if (sport == null)
+                {
+                    throw new InvalidOperationException("Sport not found");
+                }
+
                 var match = new Match
                 {
                     CreatorUserId = creatorUserId,
                     BookingId = bookingId,
-                    SportType = sportType,
+                    SportId = sportId,
                     TeamSize = teamSize,
                     Title = title,
                     Description = description,
                     MinSkillLevel = minSkillLevel,
                     MaxSkillLevel = maxSkillLevel,
-                    IsPrivate = isPrivate,
                     Status = MatchStatus.Open,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -113,30 +122,29 @@ namespace backend.Infrastructure.Services
         {
             try
             {
-                var spec = new MatchesByUserIdSpecification(userId);
+                _logger.LogInformation("Getting matches for user {UserId}", userId);
+                var spec = new MatchWithDetailsSpecification(userId, true);
+                _logger.LogInformation("Created specification with criteria: {Criteria}", spec.Criteria?.ToString());
+                
                 var matches = await _matchRepository.GetAllWithSpecAsync(spec);
-
-                var result = matches.Select(m => new MatchDto
+                _logger.LogInformation("Found {Count} matches for user {UserId}", matches.Count(), userId);
+                
+                if (!matches.Any())
                 {
-                    Id = m.Id,
-                    CreatorUserId = m.CreatorUserId,
-                    BookingId = m.BookingId,
-                    Date = m.Booking?.Date,
-                    StartTime = m.Booking?.StartTime,
-                    EndTime = m.Booking?.EndTime,
-                    SportType = m.SportType,
-                    TeamSize = m.TeamSize,
-                    Status = m.Status.ToString(),
-                    Title = m.Title,
-                    Description = m.Description,
-                    MinSkillLevel = m.MinSkillLevel,
-                    MaxSkillLevel = m.MaxSkillLevel,
-                    IsPrivate = m.IsPrivate,
-                    CreatedAt = m.CreatedAt,
-                    CompletedAt = m.CompletedAt
-                }).ToList();
-
-                return result;
+                    _logger.LogWarning("No matches found for user {UserId}. Checking if any matches exist in database...", userId);
+                    var allMatches = await _matchRepository.GetAllAsync();
+                    _logger.LogWarning("Total matches in database: {Count}", allMatches.Count());
+                    if (allMatches.Any())
+                    {
+                        _logger.LogWarning("Sample match creator IDs: {CreatorIds}", 
+                            string.Join(", ", allMatches.Take(5).Select(m => m.CreatorUserId)));
+                    }
+                }
+                
+                var matchDtos = _mapper.Map<List<MatchDto>>(matches);
+                _logger.LogInformation("Mapped {Count} matches to DTOs", matchDtos.Count);
+                
+                return matchDtos;
             }
             catch (Exception ex)
             {
@@ -145,15 +153,13 @@ namespace backend.Infrastructure.Services
             }
         }
 
-
-        public async Task<List<MatchDto>> GetAvailableMatchesAsync(int userId, string sportType = null)
+        public async Task<List<MatchDto>> GetAvailableMatchesAsync(int userId, int? sportId = null)
         {
             try
             {
-                var spec = new AvailableMatchesSpecification(userId, sportType);
+                var spec = new AvailableMatchesSpecification(userId, sportId);
                 var matches = await _matchRepository.GetAllWithSpecAsync(spec);
 
-                
                 var result = matches.Select(m => new MatchDto
                 {
                     Id = m.Id,
@@ -162,14 +168,14 @@ namespace backend.Infrastructure.Services
                     Date = m.Booking?.Date,
                     StartTime = m.Booking?.StartTime,
                     EndTime = m.Booking?.EndTime,
-                    SportType = m.SportType,
+                    SportId = m.SportId,
+                    SportName = m.Sport?.Name,
                     TeamSize = m.TeamSize,
                     Status = m.Status.ToString(),
                     Title = m.Title,
                     Description = m.Description,
                     MinSkillLevel = m.MinSkillLevel,
                     MaxSkillLevel = m.MaxSkillLevel,
-                    IsPrivate = m.IsPrivate,
                     CreatedAt = m.CreatedAt,
                     CompletedAt = m.CompletedAt
                 }).ToList();
@@ -178,7 +184,7 @@ namespace backend.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting available matches for user {UserId} with sport type {SportType}", userId, sportType);
+                _logger.LogError(ex, "Error getting available matches for user {UserId} with sport ID {SportId}", userId, sportId);
                 throw;
             }
         }
@@ -367,10 +373,10 @@ namespace backend.Infrastructure.Services
                 }
                 
                 // Cannot join private matches directly
-                if (match.IsPrivate)
-                {
-                    throw new InvalidOperationException("Cannot request to join a private match");
-                }
+                // if (match.IsPrivate)
+                // {
+                //     throw new InvalidOperationException("Cannot request to join a private match");
+                // }
                 
                 // Check if match is open
                 if (match.Status != MatchStatus.Open)

@@ -9,10 +9,10 @@ namespace backend.Core.Interfaces
     public interface IMatchService
     {
         // Match CRUD operations
-        Task<Match> CreateMatchAsync(int creatorUserId, int bookingId, string sportType, int teamSize, string title, string description, int? minSkillLevel, int? maxSkillLevel, bool isPrivate);
+        Task<Match> CreateMatchAsync(int creatorUserId, int bookingId, int sportId, int teamSize, string title, string description, int? minSkillLevel, int? maxSkillLevel);
         Task<Match> GetMatchByIdAsync(int matchId);
         Task<List<MatchDto>> GetMatchesByUserIdAsync(int userId);
-        Task<List<MatchDto>> GetAvailableMatchesAsync(int userId, string sportType = null);
+        Task<List<MatchDto>> GetAvailableMatchesAsync(int userId, int? sportId = null);
         Task<List<Match>> GetCompletedMatchesAsync(int userId);
         Task<bool> CancelMatchAsync(int matchId, int userId);
         Task<bool> CompleteMatchAsync(int matchId);
