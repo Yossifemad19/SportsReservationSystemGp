@@ -85,7 +85,7 @@ namespace backend.API.Controllers
             {
                 var userId = int.Parse(User.FindFirst("sub")?.Value);
                 await _matchService.LeaveMatchAsync(matchId, userId);
-                return NoContent(); // 204 Success
+                return Ok("Successfully left the match");
             }
             catch (InvalidOperationException ex)
             {

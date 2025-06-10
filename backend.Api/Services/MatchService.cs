@@ -146,10 +146,16 @@ namespace backend.Infrastructure.Services
             if (player == null)
                 throw new InvalidOperationException("Player not found in this match");
 
-            player.Status = ParticipationStatus.Kicked;  // mark as kicked
+            player.Status = ParticipationStatus.Kicked;
+            player.WasKicked = true;
+            player.Team = null;
+
             _matchPlayerRepository.Update(player);
             await _unitOfWork.Complete();
         }
+
+
+
 
 
 
@@ -511,9 +517,10 @@ namespace backend.Infrastructure.Services
                 throw new InvalidOperationException("Match not found");
 
             var existingPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
+
             if (existingPlayer != null)
             {
-                if (existingPlayer.Status == ParticipationStatus.Kicked)
+                if (existingPlayer.WasKicked || existingPlayer.Status == ParticipationStatus.Kicked)
                     throw new InvalidOperationException("You have been kicked from this match and cannot rejoin.");
 
                 if (existingPlayer.Status == ParticipationStatus.Accepted)
@@ -524,22 +531,27 @@ namespace backend.Infrastructure.Services
                 return true;
             }
 
+            var wasKickedBefore = await _matchPlayerRepository
+                .FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId && mp.WasKicked) != null;
+            if (wasKickedBefore)
+                throw new InvalidOperationException("You have been kicked from this match and cannot rejoin.");
+
             if (match.Status != MatchStatus.Open)
                 throw new InvalidOperationException("Cannot join a match that is not open");
 
-            var currentPlayerCount = (await _matchPlayerRepository.GetAllAsync())
+            var allPlayers = await _matchPlayerRepository.GetAllAsync();
+
+            var currentPlayerCount = allPlayers
                 .Count(mp => mp.MatchId == matchId && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
 
             if (currentPlayerCount >= match.TeamSize * 2)
                 throw new InvalidOperationException("Match is full");
 
-            // Get current team sizes
-            var teamAPlayers = (await _matchPlayerRepository.GetAllAsync())
+            var teamAPlayers = allPlayers
                 .Count(mp => mp.MatchId == matchId && mp.Team == "A" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
-            var teamBPlayers = (await _matchPlayerRepository.GetAllAsync())
+            var teamBPlayers = allPlayers
                 .Count(mp => mp.MatchId == matchId && mp.Team == "B" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
 
-            // Determine which team to assign based on current sizes
             string assignedTeam = teamAPlayers <= teamBPlayers ? "A" : "B";
 
             var player = new MatchPlayer
@@ -556,6 +568,7 @@ namespace backend.Infrastructure.Services
 
             return true;
         }
+
 
 
 
