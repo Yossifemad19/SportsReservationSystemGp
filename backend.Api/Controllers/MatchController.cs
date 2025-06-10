@@ -300,12 +300,12 @@ namespace backend.API.Controllers
         }
 
         [HttpPost("{matchId}/join")]
-        public async Task<IActionResult> RequestToJoin(int matchId)
+        public async Task<IActionResult> RequestToJoin(int matchId, [FromBody] JoinMatchRequest request)
         {
             try
             {
                 var userId = int.Parse(User.FindFirst("sub")?.Value);
-                var result = await _matchService.JoinMatchAsync(matchId, userId);
+                var result = await _matchService.JoinMatchAsync(matchId, userId, request.Team.ToUpper());
 
                 return Ok(new
                 {
@@ -558,5 +558,10 @@ namespace backend.API.Controllers
         public int SkillRating { get; set; }
         public int SportsmanshipRating { get; set; }
         public string Comment { get; set; }
+    }
+
+    public class JoinMatchRequest
+    {
+        public string Team { get; set; }
     }
 } 

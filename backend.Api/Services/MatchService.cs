@@ -510,7 +510,7 @@ namespace backend.Infrastructure.Services
         }
         */
 
-        public async Task<bool> JoinMatchAsync(int matchId, int userId)
+        public async Task<bool> JoinMatchAsync(int matchId, int userId, string team)
         {
             var match = await _matchRepository.GetByIdAsync(matchId);
             if (match == null)
@@ -547,12 +547,18 @@ namespace backend.Infrastructure.Services
             if (currentPlayerCount >= match.TeamSize * 2)
                 throw new InvalidOperationException("Match is full");
 
+            // Validate team parameter
+            if (string.IsNullOrEmpty(team) || (team != "A" && team != "B"))
+                throw new InvalidOperationException("Team must be either 'A' or 'B'");
+
             var teamAPlayers = allPlayers
                 .Count(mp => mp.MatchId == matchId && mp.Team == "A" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
             var teamBPlayers = allPlayers
                 .Count(mp => mp.MatchId == matchId && mp.Team == "B" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
 
-            string assignedTeam = teamAPlayers <= teamBPlayers ? "A" : "B";
+            // Check if the requested team is full
+            if ((team == "A" && teamAPlayers >= match.TeamSize) || (team == "B" && teamBPlayers >= match.TeamSize))
+                throw new InvalidOperationException($"Team {team} is full");
 
             var player = new MatchPlayer
             {
@@ -560,7 +566,7 @@ namespace backend.Infrastructure.Services
                 UserId = userId,
                 Status = ParticipationStatus.Accepted,
                 InvitedAt = DateTime.UtcNow,
-                Team = assignedTeam
+                Team = team
             };
 
             _matchPlayerRepository.Add(player);

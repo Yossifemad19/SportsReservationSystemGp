@@ -22,7 +22,7 @@ namespace backend.Core.Interfaces
         Task<bool> RespondToInvitationAsync(int matchId, int userId, bool accept);
         //Task<bool> RequestToJoinMatchAsync(int matchId, int userId);
         //Task<bool> RespondToJoinRequestAsync(int matchId, int requesterId, int responderId, bool approve);
-        public Task<bool> JoinMatchAsync(int matchId, int userId);
+        public Task<bool> JoinMatchAsync(int matchId, int userId,string team);
         Task<bool> CheckInPlayerAsync(int matchId, int userId);
         Task<List<MatchPlayer>> GetMatchPlayersAsync(int matchId);
         
