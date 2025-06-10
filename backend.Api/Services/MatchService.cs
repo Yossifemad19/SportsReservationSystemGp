@@ -22,21 +22,12 @@ namespace backend.Infrastructure.Services
         private readonly IGenericRepository<Booking> _bookingRepository;
         private readonly IGenericRepository<PlayerProfile> _playerProfileRepository;
         private readonly ILogger<MatchService> _logger;
-<<<<<<< HEAD
         private readonly IFriendRequestService _friendRequestService;
-       
-
-        public MatchService(
-            IUnitOfWork unitOfWork,
-            ILogger<MatchService> logger, IFriendRequestService friendRequestService)
-=======
         private readonly IMapper _mapper;
 
         public MatchService(
             IUnitOfWork unitOfWork,
-            ILogger<MatchService> logger,
-            IMapper mapper)
->>>>>>> 208d07b2b7355f385e6d7bd4d8410b4b1b42a5fb
+            ILogger<MatchService> logger, IFriendRequestService friendRequestService, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _matchRepository = _unitOfWork.Repository<Match>();
@@ -45,11 +36,8 @@ namespace backend.Infrastructure.Services
             _bookingRepository = _unitOfWork.Repository<Booking>();
             _playerProfileRepository = _unitOfWork.Repository<PlayerProfile>();
             _logger = logger;
-<<<<<<< HEAD
             _friendRequestService = friendRequestService;
-=======
             _mapper = mapper;
->>>>>>> 208d07b2b7355f385e6d7bd4d8410b4b1b42a5fb
         }
 
         // Match CRUD operations
@@ -302,14 +290,14 @@ namespace backend.Infrastructure.Services
                 }
 
 
-                // Check if inviter is creator or player
-                //var inviterIsPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == inviterUserId) != null;
-                //if (match.CreatorUserId != inviterUserId && !inviterIsPlayer)
-                //{
-                //    throw new InvalidOperationException("Only the match creator or players can invite others");
-                //}
+                //Check if inviter is creator or player
+               var inviterIsPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == inviterUserId) != null;
+                if (match.CreatorUserId != inviterUserId && !inviterIsPlayer)
+                {
+                    throw new InvalidOperationException("Only the match creator or players can invite others");
+                }
 
-                
+
                 // Check if match is open
                 if (match.Status != MatchStatus.Open)
                 {
@@ -478,10 +466,7 @@ namespace backend.Infrastructure.Services
                 var existingPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
                 if (existingPlayer != null)
                 {
-                    if (match.IsPrivate && existingPlayer.Status != ParticipationStatus.Invited)
-                    {
-                        throw new InvalidOperationException("You must be invited to join a private match");
-                    }
+                    
 
                     if (existingPlayer.Status == ParticipationStatus.Accepted)
                     {
@@ -494,11 +479,8 @@ namespace backend.Infrastructure.Services
                     return true;
                 }
 
-                // For private matches: block join if not previously invited
-                if (match.IsPrivate)
-                {
-                    throw new InvalidOperationException("You must be invited to join this private match");
-                }
+                
+                
 
                 // Check if match is open
                 if (match.Status != MatchStatus.Open)
