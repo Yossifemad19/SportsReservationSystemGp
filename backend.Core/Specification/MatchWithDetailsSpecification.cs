@@ -16,7 +16,7 @@ namespace backend.Core.Specification
 
         public MatchWithDetailsSpecification(int creatorUserId, bool isCreator = true) : base()
         {
-            Criteria = m => m.CreatorUserId == creatorUserId;
+            Criteria = m => m.CreatorUserId == creatorUserId || m.Players.Any(p => p.UserId == creatorUserId);
             AddInclude(m => m.Players);
             AddIncludeString("Players.User");
             AddInclude(m => m.Ratings);

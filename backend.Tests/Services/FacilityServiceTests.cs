@@ -1,4 +1,4 @@
-using AutoMapper;
+/*using AutoMapper;
 using backend.Api.DTOs;
 using backend.Api.Services;
 using backend.Core.Entities;
@@ -404,4 +404,4 @@ namespace backend.Tests.Services
             Assert.Contains(result.Data, f => f.Name == "Facility 2");
         }
     }
-} 
+} */

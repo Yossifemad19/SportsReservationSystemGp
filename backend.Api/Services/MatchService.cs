@@ -420,6 +420,7 @@ namespace backend.Infrastructure.Services
             }
         }
 
+        /*
         public async Task<bool> RequestToJoinMatchAsync(int matchId, int userId)
         {
             try
@@ -429,13 +430,6 @@ namespace backend.Infrastructure.Services
                 {
                     throw new InvalidOperationException("Match not found");
                 }
-                
-                // Cannot join private matches directly
-                // if (match.IsPrivate)
-                // {
-                //     throw new InvalidOperationException("Cannot request to join a private match");
-                // }
-                
                 // Check if match is open
                 if (match.Status != MatchStatus.Open)
                 {
@@ -457,6 +451,15 @@ namespace backend.Infrastructure.Services
                 {
                     throw new InvalidOperationException("Match is full");
                 }
+                
+                // Get current team sizes
+                var teamAPlayers = (await _matchPlayerRepository.GetAllAsync())
+                    .Count(mp => mp.MatchId == matchId && mp.Team == "A" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
+                var teamBPlayers = (await _matchPlayerRepository.GetAllAsync())
+                    .Count(mp => mp.MatchId == matchId && mp.Team == "B" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
+
+                // Determine which team to assign based on current sizes
+                string assignedTeam = teamAPlayers <= teamBPlayers ? "A" : "B";
                 
                 // Check if player meets skill requirements
                 if (match.MinSkillLevel.HasValue || match.MaxSkillLevel.HasValue)
@@ -484,7 +487,8 @@ namespace backend.Infrastructure.Services
                     MatchId = matchId,
                     UserId = userId,
                     Status = ParticipationStatus.Requested,
-                    InvitedAt = DateTime.UtcNow
+                    InvitedAt = DateTime.UtcNow,
+                    Team = assignedTeam
                 };
                 
                 _matchPlayerRepository.Add(player);
@@ -498,6 +502,7 @@ namespace backend.Infrastructure.Services
                 throw;
             }
         }
+        */
 
         public async Task<bool> JoinMatchAsync(int matchId, int userId)
         {
@@ -528,12 +533,22 @@ namespace backend.Infrastructure.Services
             if (currentPlayerCount >= match.TeamSize * 2)
                 throw new InvalidOperationException("Match is full");
 
+            // Get current team sizes
+            var teamAPlayers = (await _matchPlayerRepository.GetAllAsync())
+                .Count(mp => mp.MatchId == matchId && mp.Team == "A" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
+            var teamBPlayers = (await _matchPlayerRepository.GetAllAsync())
+                .Count(mp => mp.MatchId == matchId && mp.Team == "B" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
+
+            // Determine which team to assign based on current sizes
+            string assignedTeam = teamAPlayers <= teamBPlayers ? "A" : "B";
+
             var player = new MatchPlayer
             {
                 MatchId = matchId,
                 UserId = userId,
                 Status = ParticipationStatus.Accepted,
-                InvitedAt = DateTime.UtcNow
+                InvitedAt = DateTime.UtcNow,
+                Team = assignedTeam
             };
 
             _matchPlayerRepository.Add(player);

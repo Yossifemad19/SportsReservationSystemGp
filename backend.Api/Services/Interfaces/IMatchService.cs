@@ -20,7 +20,7 @@ namespace backend.Core.Interfaces
         // Player management
         Task<bool> InvitePlayerToMatchAsync(int matchId, int invitedUserId, int inviterUserId);
         Task<bool> RespondToInvitationAsync(int matchId, int userId, bool accept);
-        Task<bool> RequestToJoinMatchAsync(int matchId, int userId);
+        //Task<bool> RequestToJoinMatchAsync(int matchId, int userId);
         //Task<bool> RespondToJoinRequestAsync(int matchId, int requesterId, int responderId, bool approve);
         public Task<bool> JoinMatchAsync(int matchId, int userId);
         Task<bool> CheckInPlayerAsync(int matchId, int userId);
