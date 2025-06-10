@@ -27,6 +27,7 @@ namespace backend.Core.Entities
         public DateTime? CheckedInAt { get; set; }
         
         public string? Team { get; set; } // e.g., "A" or "B"
+        public bool WasKicked { get; set; } = false;
     }
     
     public enum ParticipationStatus
@@ -50,6 +51,10 @@ namespace backend.Core.Entities
         Rejected,
         
         [EnumMember(Value = "CheckedIn")]
-        CheckedIn
+        CheckedIn,
+
+        [EnumMember(Value = "Kicked")]
+        Kicked
+
     }
 } 

@@ -78,6 +78,56 @@ namespace backend.API.Controllers
             }
         }
 
+        [HttpPost("{matchId}/leave")]
+        public async Task<IActionResult> LeaveMatch(int matchId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("sub")?.Value);
+                await _matchService.LeaveMatchAsync(matchId, userId);
+                return NoContent(); // 204 Success
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Leave match validation failed for match {MatchId}", matchId);
+                return BadRequest(new ApiResponse(400, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while leaving match {MatchId}", matchId);
+                return StatusCode(500, new ApiResponse(500, "An error occurred while leaving the match"));
+            }
+        }
+
+        [HttpPost("{matchId}/kick/{targetUserId}")]
+        public async Task<IActionResult> KickPlayer(int matchId, int targetUserId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("sub")?.Value);
+
+                await _matchService.KickPlayerAsync(matchId, userId, targetUserId);
+                return Ok("Player kicked successfully");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized attempt to kick player {TargetUserId} from match {MatchId}", targetUserId, matchId);
+                return Forbid("Only the match creator can kick players");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation while kicking player {TargetUserId} from match {MatchId}", targetUserId, matchId);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while kicking player {TargetUserId} from match {MatchId}", targetUserId, matchId);
+                return StatusCode(500,"An error occurred while kicking the player");
+            }
+        }
+
+
+
         [HttpGet("{matchId}")]
         public async Task<IActionResult> GetMatch(int matchId)
         {

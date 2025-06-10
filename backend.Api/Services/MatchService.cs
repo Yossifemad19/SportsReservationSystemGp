@@ -107,6 +107,53 @@ namespace backend.Infrastructure.Services
             }
         }
 
+        public async Task<bool> LeaveMatchAsync(int matchId, int userId)
+        {
+            try
+            {
+                var match = await _matchRepository.GetByIdAsync(matchId);
+                if (match == null)
+                    throw new InvalidOperationException("Match not found");
+
+                if (match.CreatorUserId == userId)
+                    throw new InvalidOperationException("Match creator cannot leave their own match");
+
+                var matchPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
+                if (matchPlayer == null)
+                    throw new InvalidOperationException("User is not part of the match");
+
+                _matchPlayerRepository.Remove(matchPlayer);
+                await _unitOfWork.Complete();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error leaving match {MatchId} by user {UserId}", matchId, userId);
+                throw;
+            }
+        }
+
+        public async Task KickPlayerAsync(int matchId, int creatorUserId, int targetUserId)
+        {
+            var match = await _matchRepository.GetByIdAsync(matchId);
+            if (match == null)
+                throw new InvalidOperationException("Match not found");
+
+            if (match.CreatorUserId != creatorUserId)
+                throw new UnauthorizedAccessException("Only the match creator can kick players");
+
+            var player = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == targetUserId);
+            if (player == null)
+                throw new InvalidOperationException("Player not found in this match");
+
+            player.Status = ParticipationStatus.Kicked;  // mark as kicked
+            _matchPlayerRepository.Update(player);
+            await _unitOfWork.Complete();
+        }
+
+
+
+
         public async Task<Match> GetMatchByIdAsync(int matchId)
         {
             try
@@ -454,71 +501,48 @@ namespace backend.Infrastructure.Services
 
         public async Task<bool> JoinMatchAsync(int matchId, int userId)
         {
-            try
+            var match = await _matchRepository.GetByIdAsync(matchId);
+            if (match == null)
+                throw new InvalidOperationException("Match not found");
+
+            var existingPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
+            if (existingPlayer != null)
             {
-                var match = await _matchRepository.GetByIdAsync(matchId);
-                if (match == null)
-                {
-                    throw new InvalidOperationException("Match not found");
-                }
+                if (existingPlayer.Status == ParticipationStatus.Kicked)
+                    throw new InvalidOperationException("You have been kicked from this match and cannot rejoin.");
 
-                // Check if user is already in or invited to the match
-                var existingPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
-                if (existingPlayer != null)
-                {
-                    
+                if (existingPlayer.Status == ParticipationStatus.Accepted)
+                    throw new InvalidOperationException("You are already part of this match");
 
-                    if (existingPlayer.Status == ParticipationStatus.Accepted)
-                    {
-                        throw new InvalidOperationException("You are already part of this match");
-                    }
-
-                    // Update their status to Joined if they were invited
-                    existingPlayer.Status = ParticipationStatus.Accepted;
-                    await _unitOfWork.Complete();
-                    return true;
-                }
-
-                
-                
-
-                // Check if match is open
-                if (match.Status != MatchStatus.Open)
-                {
-                    throw new InvalidOperationException("Cannot join a match that is not open");
-                }
-
-                // Check if match is full
-                var currentPlayerCount = (await _matchPlayerRepository.GetAllAsync())
-                    .Count(mp => mp.MatchId == matchId && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
-
-                if (currentPlayerCount >= match.TeamSize * 2)
-                {
-                    throw new InvalidOperationException("Match is full");
-                }
-
-                // Skip skill check (you can re-add if needed)
-
-                // Add player directly to match
-                var player = new MatchPlayer
-                {
-                    MatchId = matchId,
-                    UserId = userId,
-                    Status = ParticipationStatus.Accepted,
-                    InvitedAt = DateTime.UtcNow
-                };
-
-                _matchPlayerRepository.Add(player);
+                existingPlayer.Status = ParticipationStatus.Accepted;
                 await _unitOfWork.Complete();
-
                 return true;
             }
-            catch (Exception ex)
+
+            if (match.Status != MatchStatus.Open)
+                throw new InvalidOperationException("Cannot join a match that is not open");
+
+            var currentPlayerCount = (await _matchPlayerRepository.GetAllAsync())
+                .Count(mp => mp.MatchId == matchId && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
+
+            if (currentPlayerCount >= match.TeamSize * 2)
+                throw new InvalidOperationException("Match is full");
+
+            var player = new MatchPlayer
             {
-                _logger.LogError(ex, "Error joining match {MatchId} by user {UserId}", matchId, userId);
-                throw;
-            }
+                MatchId = matchId,
+                UserId = userId,
+                Status = ParticipationStatus.Accepted,
+                InvitedAt = DateTime.UtcNow
+            };
+
+            _matchPlayerRepository.Add(player);
+            await _unitOfWork.Complete();
+
+            return true;
         }
+
+
 
 
         public async Task<bool> CheckInPlayerAsync(int matchId, int userId)
