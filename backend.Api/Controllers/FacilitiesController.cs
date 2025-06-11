@@ -24,7 +24,7 @@ public class FacilitiesController : ControllerBase
         var result = await _facilityService.GetFacilityById(id);
 
         if (!result.Success || result.Data == null)
-            return NotFound(result.Message);
+            return NotFound(result);
 
         return Ok(result);
     }
@@ -38,7 +38,7 @@ public class FacilitiesController : ControllerBase
         var result = await _facilityService.CreateFacility(facilityDto, ownerId);
 
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
         return Ok(result);
     }
@@ -50,12 +50,12 @@ public class FacilitiesController : ControllerBase
         var ownerId = User.FindFirst("sub")?.Value;
 
         if (facilityDto == null || facilityDto.Id <= 0)
-            return BadRequest("Facility data or ID is missing.");
+            return BadRequest(ServiceResult<FacilityDto>.Fail("Facility data or ID is missing."));
 
         var result = await _facilityService.UpdateFacility(facilityDto, ownerId);
 
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
         return Ok(result);
     }
@@ -67,7 +67,7 @@ public class FacilitiesController : ControllerBase
         var result = await _facilityService.DeleteFacility(id);
 
         if (!result.Success || result.Data == false)
-            return NotFound(result.Message);
+            return NotFound(result);
 
         return Ok(result);
     }
@@ -90,8 +90,8 @@ public class FacilitiesController : ControllerBase
         var result = await _facilityService.GetAllFacilities(isOwner, ownerId);
 
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
-        return Ok(result.Data);
+        return Ok(result);
     }
 }
