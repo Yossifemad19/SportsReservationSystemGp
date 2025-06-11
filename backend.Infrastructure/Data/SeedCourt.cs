@@ -19,45 +19,75 @@ public static class SeedCourts
 
         var existingCourts = await courtRepository.GetAllAsync();
         if (existingCourts.Any())
-        {
             return 0;
-        }
 
         var facilities = (await facilityRepository.GetAllAsync()).ToList();
         var sports = (await sportRepository.GetAllAsync()).ToList();
 
         if (!facilities.Any() || !sports.Any())
-        {
             return -1;
-        }
 
         var random = new Random();
         var courts = new List<Court>();
 
-        
         var courtCounters = new Dictionary<string, int>
-        {
-            { "Football", 1 },
-            { "Basketball", 1 },
-            { "Tennis", 1 },
-            { "Volleyball", 1 },
-            { "Padel", 1 }
-        };
+    {
+        { "Football", 1 },
+        { "Basketball", 1 },
+        { "Tennis", 1 },
+        { "Volleyball", 1 },
+        { "Padel", 1 }
+    };
 
-        for (int i = 0; i < 20; i++)
+        // Step 1: Ensure each facility has at least one court
+        foreach (var facility in facilities)
+        {
+            var sport = sports[random.Next(sports.Count)];
+            var sportName = sport.Name;
+            var courtNumber = courtCounters[sportName]++;
+            var courtName = $"{sportName} Court {courtNumber}";
+
+            decimal price = sportName switch
+            {
+                "Football" => 200.00m,
+                "Basketball" => 200.00m,
+                "Tennis" => 200.00m,
+                "Volleyball" => 150.00m,
+                "Padel" => 300.00m,
+                _ => 200.00m
+            };
+
+            int capacity = sportName switch
+            {
+                "Football" => 10,
+                "Basketball" => 10,
+                "Tennis" => 2,
+                "Volleyball" => 6,
+                "Padel" => 4,
+                _ => 10
+            };
+
+            courts.Add(new Court
+            {
+                Name = courtName,
+                FacilityId = facility.Id,
+                SportId = sport.Id,
+                Capacity = capacity,
+                PricePerHour = price
+            });
+        }
+
+        // Step 2: Add more courts until total is 30
+        while (courts.Count < 30)
         {
             var facility = facilities[random.Next(facilities.Count)];
 
             Sport sport;
             int chance = random.Next(100);
             if (chance < 50)
-            {
                 sport = sports.First(s => s.Name == "Football");
-            }
             else
-            {
                 sport = sports[random.Next(sports.Count)];
-            }
 
             var sportName = sport.Name;
             var courtNumber = courtCounters[sportName]++;
@@ -94,12 +124,11 @@ public static class SeedCourts
         }
 
         foreach (var court in courts)
-        {
             courtRepository.Add(court);
-        }
 
         return await unitOfWork.Complete();
     }
+
 }
 
 

@@ -15,25 +15,56 @@ public class SportController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IWebHostEnvironment _env;
 
-    public SportController(IUnitOfWork unitOfWork, IMapper mapper)
+    public SportController(IUnitOfWork unitOfWork, IMapper mapper , IWebHostEnvironment env)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _env = env;
     }
 
     [HttpPost("add")]
-    public async Task<IActionResult> AddSport(string SportName)
+    public async Task<IActionResult> AddSport([FromForm] SportDto sportDto)
     {
-        if (string.IsNullOrEmpty(SportName))
+        if (string.IsNullOrEmpty(sportDto.Name))
             return BadRequest("Sport name is required");
-        if (SportName.Length > 20)
+
+        if (sportDto.Name.Length > 20)
             return BadRequest("Sport name is too long");
 
-        _unitOfWork.Repository<Sport>().Add(new Sport() { Name = SportName });
-        return await _unitOfWork.Complete() > 0 ? Ok("sport added successfully") : BadRequest(new ApiResponse(400, "sport not added"));
+        string? relativePath = null;
+        if (sportDto.Image != null)
+        {
+            var imagesFolder = Path.Combine(_env.WebRootPath, "images/sports");
+            if (!Directory.Exists(imagesFolder))
+                Directory.CreateDirectory(imagesFolder);
 
+            var imageFile = $"{Guid.NewGuid()}-{sportDto.Image.FileName}";
+            relativePath = Path.Combine("images/sports", imageFile);
+            var filePath = Path.Combine(imagesFolder, imageFile);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await sportDto.Image.CopyToAsync(fileStream);
+            }
+        }
+
+        var sport = new Sport
+        {
+            Name = sportDto.Name,
+            ImageUrl = relativePath
+        };
+
+        _unitOfWork.Repository<Sport>().Add(sport);
+        var result = await _unitOfWork.Complete();
+
+        if (result <= 0)
+            return BadRequest(new ApiResponse(400, "Sport not added"));
+
+        return Ok("Sport added successfully");
     }
+
 
     [HttpGet("getAll")]
     public async Task<IActionResult> GetAllSports()

@@ -57,8 +57,4 @@
     <_ContentIncludedByDefault Remove="published\published\published\published\published\backend.Api.runtimeconfig.json" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
 </Project>

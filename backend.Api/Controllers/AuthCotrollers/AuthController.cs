@@ -60,7 +60,7 @@ public class AuthController: ControllerBase
         var userIdClaim = User.FindFirst("sub")?.Value;
         if (!int.TryParse(userIdClaim, out int userId) || userId <= 0)
         {
-            return BadRequest(new ApiResponse(400, "Invalid or missing user ID in token."));
+            return BadRequest(new ApiResponse(400, "Invalid or missing user ID "));
         }
         var result = await _authService.GetUserById(userId);
         if (!result.Success)
@@ -75,7 +75,7 @@ public class AuthController: ControllerBase
         var userIdClaim = User.FindFirst("sub")?.Value;
         if (!int.TryParse(userIdClaim, out int userId) || userId <= 0)
         {
-            return BadRequest(new ApiResponse(400, "Invalid or missing user ID in token."));
+            return BadRequest(new ApiResponse(400, "Invalid or missing user ID."));
         }
 
         if (userProfile == null || userId <= 0)

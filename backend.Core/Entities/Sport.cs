@@ -9,4 +9,5 @@ public class Sport: BaseEntity
     [Required,Column(TypeName = "varchar(20)")]
     public string Name { get; set; }
     public ICollection<Court> Courts { get; set; }
+    public string? ImageUrl { get; set; }
 }

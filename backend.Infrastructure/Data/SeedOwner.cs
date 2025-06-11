@@ -13,6 +13,13 @@ public class SeedOwners
 {
     public static async Task<int> SeedOwnersData(IUnitOfWork unitOfWork, string ownerPasswordHash)
     {
+        var ownerRepo = unitOfWork.Repository<Owner>();
+        var existingOwners = await ownerRepo.GetAllAsync();
+        if (existingOwners.Any())
+        {
+            return 0;
+        }
+
         var ownerRole = await unitOfWork.Repository<UserRole>().GetFirstOrDefaultAsync(new UserRoleSpecification("Owner"));
         if (ownerRole == null)
         {
