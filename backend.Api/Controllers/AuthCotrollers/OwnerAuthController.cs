@@ -27,7 +27,7 @@ public class OwnerAuthController : ControllerBase
         var result = await _OwnerAuthService.OwnerRegister(ownerRegisterDto, "Owner");
 
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
         var owner = new
         {
@@ -51,11 +51,11 @@ public class OwnerAuthController : ControllerBase
     {
         var result = await _OwnerAuthService.OwnerLogin(ownerLoginDto);
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
         
         if (!bool.TryParse(result.Data.IsApproved, out var isApproved) || !isApproved)
-            return Unauthorized(new ApiResponse(401, "Your account is not approved yet. Please wait for admin approval."));
+            return Unauthorized(ServiceResult<OwnerResponseDto>.Fail( "Your account is not approved yet. Please wait for admin approval."));
 
         return Ok(result);
     }

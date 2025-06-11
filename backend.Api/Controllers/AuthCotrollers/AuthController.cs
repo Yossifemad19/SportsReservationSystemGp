@@ -30,7 +30,7 @@ public class AuthController: ControllerBase
         var result = await _authService.Register(registerDto, "Customer");
         
         if(!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
 
         return Ok(new
@@ -49,7 +49,7 @@ public class AuthController: ControllerBase
     {
         var result = await _authService.Login(loginDto);
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
         return Ok(result);
     }
@@ -60,11 +60,11 @@ public class AuthController: ControllerBase
         var userIdClaim = User.FindFirst("sub")?.Value;
         if (!int.TryParse(userIdClaim, out int userId) || userId <= 0)
         {
-            return BadRequest(new ApiResponse(400, "Invalid or missing user ID "));
+            return BadRequest( ServiceResult<GetAllResponse>.Fail("Invalid or missing user ID in token."));
         }
         var result = await _authService.GetUserById(userId);
         if (!result.Success)
-            return NotFound(result.Message);
+            return NotFound(result);
 
         return Ok(result);
     }
@@ -75,12 +75,12 @@ public class AuthController: ControllerBase
         var userIdClaim = User.FindFirst("sub")?.Value;
         if (!int.TryParse(userIdClaim, out int userId) || userId <= 0)
         {
-            return BadRequest(new ApiResponse(400, "Invalid or missing user ID."));
+            return BadRequest(ServiceResult<GetAllResponse>.Fail("Invalid or missing user ID in token."));
         }
 
         if (userProfile == null || userId <= 0)
         {
-            return BadRequest(new ApiResponse(400, "Invalid user profile data or user ID."));
+            return BadRequest(ServiceResult<GetAllResponse>.Fail("Invalid user profile data or user ID."));
         }
 
         try
@@ -89,7 +89,7 @@ public class AuthController: ControllerBase
 
             if (!result.Success)
             {
-                return BadRequest(result.Message);
+                return BadRequest(result);
             }
 
             return Ok(result); 
@@ -98,10 +98,10 @@ public class AuthController: ControllerBase
         {
             if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
-                return NotFound(new { message = ex.Message }); 
+                return NotFound(ServiceResult<GetAllResponse>.Fail(message:ex.Message)); 
             }
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message }); 
+            return StatusCode(StatusCodes.Status500InternalServerError,ServiceResult<GetAllResponse>.Fail(message:ex.Message)); 
         }
     }
 
@@ -140,7 +140,7 @@ public class AuthController: ControllerBase
 
         var result = await _authService.ForgotPassword(forgotPasswordDto.Email);
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
         return Ok(result);
     }
@@ -150,7 +150,7 @@ public class AuthController: ControllerBase
     {
         var result = await _authService.ResetPassword(passwordDto);
         if (!result.Success)
-            return BadRequest(new ApiResponse(400, "Failed to reset password"));
+            return BadRequest(ServiceResult<string>.Fail( "Failed to reset password"));
 
         return Ok(result);
     }

@@ -25,7 +25,7 @@ public class AdminAuthController:ControllerBase
     {
         var result = await _adminService.AdminLogin(adminLoginDto);
         if(!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
         
         return Ok(result);
     }
@@ -35,7 +35,7 @@ public class AdminAuthController:ControllerBase
     {
         var result = await _adminService.ApproveOwner(ownerId);
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
 
         return Ok(result);
     }
@@ -45,7 +45,7 @@ public class AdminAuthController:ControllerBase
     {
         var result = await _adminService.GetAllUsers();
         if(!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
         return Ok(result);
     }
 
@@ -55,7 +55,7 @@ public class AdminAuthController:ControllerBase
     {
         var result = await _adminService.GetAllOwners();
         if(!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(result);
         return Ok(result);
     }
 
@@ -63,7 +63,7 @@ public class AdminAuthController:ControllerBase
     public async Task<IActionResult> RejectOwner(int ownerId)
     {
         var result = await _adminService.RejectOwner(ownerId);
-        if (!result.Success) return BadRequest(result.Message);
+        if (!result.Success) return BadRequest(result);
 
         return Ok(result);
     }
@@ -71,7 +71,7 @@ public class AdminAuthController:ControllerBase
     public async Task<IActionResult> GetUnapprovedOwners()
     {
         var result = await _adminService.GetAllUnApprovedOwners();
-        if(!result.Success) return BadRequest(result.Message);
+        if(!result.Success) return BadRequest(result);
         return Ok(result);
     }
 
@@ -80,7 +80,7 @@ public class AdminAuthController:ControllerBase
     public async Task<IActionResult> GetOwnerById(int id)
     {
         var result = await _adminService.GetOwnerById(id);
-        if(!result.Success) return BadRequest(result.Message);
+        if(!result.Success) return BadRequest(result);
         return Ok(result);
     }
 
@@ -88,7 +88,7 @@ public class AdminAuthController:ControllerBase
     public async Task<IActionResult> GetUserById(int id)
     {
         var result = await _adminService.GetUserById(id);
-        if(!result.Success) return BadRequest(result.Message);
+        if(!result.Success) return BadRequest(result);
         return Ok(result);
     }
 
