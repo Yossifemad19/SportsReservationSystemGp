@@ -18,16 +18,17 @@ public static class SeedSports
         if (existingSports.Any())
             return 0;
 
-        var imageFolder = Path.Combine("images", "sports");
+        var imageFolder = "images/sports"; 
 
         var sports = new List<Sport>
-           {
-               new Sport { Name = "Football", ImageUrl = Path.Combine(imageFolder, "Football_image.jpg") },
-               new Sport { Name = "Basketball", ImageUrl = Path.Combine(imageFolder, "Basketball_image.jpg") },
-               new Sport { Name = "Tennis", ImageUrl = Path.Combine(imageFolder, "Tennis_image.jpg") },
-               new Sport { Name = "Volleyball", ImageUrl = Path.Combine(imageFolder, "Volleyball_image.jpg") },
-               new Sport { Name = "Padel", ImageUrl = Path.Combine(imageFolder, "Padel_image.jpg") }
-           };
+        {
+            new Sport { Name = "Football", ImageUrl = $"{imageFolder}/Football_image.jpg" },
+            new Sport { Name = "Basketball", ImageUrl = $"{imageFolder}/Basketball_image.jpg" },
+            new Sport { Name = "Tennis", ImageUrl = $"{imageFolder}/Tennis_image.jpg" },
+            new Sport { Name = "Volleyball", ImageUrl = $"{imageFolder}/Volleyball_image.jpg" },
+            new Sport { Name = "Padel", ImageUrl = $"{imageFolder}/Padel_image.jpg" }
+        };
+
 
         foreach (var sport in sports)
         {

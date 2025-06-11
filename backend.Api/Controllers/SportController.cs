@@ -34,20 +34,28 @@ public class SportController : ControllerBase
             return BadRequest("Sport name is too long");
 
         string? relativePath = null;
+
         if (sportDto.Image != null)
         {
-            var imagesFolder = Path.Combine(_env.WebRootPath, "images/sports");
+            
+            var imagesFolder = Path.Combine(_env.WebRootPath, "images", "sports");
             if (!Directory.Exists(imagesFolder))
                 Directory.CreateDirectory(imagesFolder);
 
+            
             var imageFile = $"{Guid.NewGuid()}-{sportDto.Image.FileName}";
-            relativePath = Path.Combine("images/sports", imageFile);
+
+            
             var filePath = Path.Combine(imagesFolder, imageFile);
 
+            
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await sportDto.Image.CopyToAsync(fileStream);
             }
+
+            
+            relativePath = $"images/sports/{imageFile}";
         }
 
         var sport = new Sport
@@ -64,6 +72,7 @@ public class SportController : ControllerBase
 
         return Ok("Sport added successfully");
     }
+
 
 
     [HttpGet("getAll")]

@@ -1,6 +1,7 @@
 using AutoMapper;
 using backend.Api.DTOs;
 using backend.Core.Entities;
+using static backend.Api.Helpers.FacilityImageUrlResolver;
 
 namespace backend.Api.Helpers;
 
@@ -20,7 +21,8 @@ public class MappingProfiles: Profile
         CreateMap<FacilityDto, Facility>();
 
         CreateMap<CourtDto, Court>().ReverseMap();
-        CreateMap<Sport, SportDto>();
+        CreateMap<Sport, SportDto>()
+            .ForMember(d => d.ImageUrl, o => o.MapFrom<SportImageUrlResolver>());
 
         CreateMap<Match, MatchDto>()
     .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))

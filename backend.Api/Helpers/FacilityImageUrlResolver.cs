@@ -16,9 +16,30 @@ public class FacilityImageUrlResolver:IValueResolver<Facility,FacilityDto,string
     {
         if (!String.IsNullOrEmpty(source.ImageUrl))
         {
-            return _configuration["ApiUrl"]+source.ImageUrl;
+            return source.ImageUrl;
         }
 
         return null;
     }
+
+    public class SportImageUrlResolver : IValueResolver<Sport, SportDto, string>
+    {
+        private readonly IConfiguration _configuration;
+
+        public SportImageUrlResolver(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        public string Resolve(Sport source, SportDto destination, string destMember, ResolutionContext context)
+        {
+            if (!string.IsNullOrEmpty(source.ImageUrl))
+            {
+                return  source.ImageUrl;
+            }
+
+            return null;
+        }
+    }
+
 }
