@@ -44,7 +44,8 @@ jobs:
 
     
     - name: Run tests
-      run: dotnet test ./backend.Tests/backend.Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage"
+      run: dotnet test ./backend.Tests/backend.Tests.csproj --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
+
 
 
     
