@@ -32,38 +32,24 @@ namespace backend.Core.Specification
 
     public class FacilityWithOwnerAndSportFilterSpecification : BaseSpecification<Facility>
     {
-        public FacilityWithOwnerAndSportFilterSpecification(bool isOwner, int? ownerId = null, int? sportId = null)
+        public FacilityWithOwnerAndSportFilterSpecification(
+            bool isOwner,
+            int? ownerId = null,
+            int? sportId = null,
+            string? city = null)
         {
             AddInclude(f => f.Address);
-            
-            // Always include Courts when filtering by sport to ensure proper query execution
+
             if (sportId.HasValue)
             {
                 AddInclude(f => f.Courts);
             }
 
-            if (isOwner && ownerId.HasValue)
-            {
-                if (sportId.HasValue)
-                {
-                    Criteria = f => f.OwnerId == ownerId.Value && f.Courts.Any(c => c.SportId == sportId.Value);
-                }
-                else
-                {
-                    Criteria = f => f.OwnerId == ownerId.Value;
-                }
-            }
-            else
-            {
-                if (sportId.HasValue)
-                {
-                    Criteria = f => f.Courts.Any(c => c.SportId == sportId.Value);
-                }
-                else
-                {
-                    Criteria = f => true; // All facilities
-                }
-            }
+            Criteria = f =>
+                (!isOwner || (ownerId.HasValue && f.OwnerId == ownerId.Value)) &&
+                (!sportId.HasValue || f.Courts.Any(c => c.SportId == sportId.Value)) &&
+                (string.IsNullOrEmpty(city) || f.Address.City.ToLower() == city.ToLower());
         }
     }
-} 
+
+}

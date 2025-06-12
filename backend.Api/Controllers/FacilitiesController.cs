@@ -2,6 +2,7 @@
 using backend.Api.DTOs;
 using backend.Api.Errors;
 using backend.Api.Services;
+using backend.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 public class FacilitiesController : ControllerBase
 {
     private readonly IFacilityService _facilityService;
+    private readonly ICityService _cityService;
     private readonly IWebHostEnvironment _env;
 
-    public FacilitiesController(IFacilityService facilityService, IWebHostEnvironment env)
+    public FacilitiesController(IFacilityService facilityService, IWebHostEnvironment env, ICityService cityService)
     {
         _facilityService = facilityService;
         _env = env;
+        _cityService = cityService;
     }
 
     [HttpGet("{id}")]
@@ -83,15 +86,24 @@ public class FacilitiesController : ControllerBase
     //    return Ok(result);
     //}
     [HttpGet]
-    public async Task<IActionResult> GetAllFacilities([FromQuery] bool isOwner = false,int? sportId = null)
+    public async Task<IActionResult> GetAllFacilities([FromQuery] bool isOwner = false,[FromQuery] int? sportId = null,[FromQuery] string? city = null)
     {
         var ownerId = User.FindFirst("sub")?.Value;
 
-        var result = await _facilityService.GetAllFacilities(isOwner, ownerId, sportId);
+        var result = await _facilityService.GetAllFacilities(isOwner, ownerId, sportId, city);
 
         if (!result.Success)
             return BadRequest(result);
 
         return Ok(result);
     }
+
+    [HttpGet("cities")]
+    public IActionResult GetAllCities()
+    {
+        var cities = _cityService.GetAllAllowedCities();
+        return Ok(ServiceResult<IReadOnlyCollection<string>>.Ok(cities));
+    }
+
+
 }

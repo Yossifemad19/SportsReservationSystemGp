@@ -10,9 +10,9 @@ public class UserProfileConfiguration: IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.Property(x => x.FirstName).IsRequired()
-            .HasColumnType("varchar(10)");
+            .HasColumnType("varchar(20)");
         builder.Property(x => x.LastName).IsRequired()
-            .HasColumnType("varchar(10)");
+            .HasColumnType("varchar(20)");
         builder.Property(x=>x.PhoneNumber).HasColumnType("varchar(11)");
         builder.Property(x=>x.Email).IsRequired()
             .HasColumnType("varchar(30)")

@@ -13,11 +13,11 @@ public class RegisterDtoValidator:AbstractValidator<RegisterDto>
         
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First Name Is Required")
-            .Length(2, 10).WithMessage("First Name Is Must Be Between 2 and 10 Characters");
+            .Length(2, 20).WithMessage("First Name Is Must Be Between 2 and 20 Characters");
         
         RuleFor(x => x.LastName)
             .NotEmpty().WithMessage("Last Name Is Required")
-            .Length(2, 10).WithMessage("Last Name Is Must Be Between 2 and 10 Characters");
+            .Length(2, 20).WithMessage("Last Name Is Must Be Between 2 and 20 Characters");
         
         RuleFor(x=>x.PhoneNumber).Length(11)
             .Matches(@"^0\d{10}$")
@@ -48,11 +48,11 @@ public class OwnerRegisterDtoValidator : AbstractValidator<OwnerRegisterDto>
 
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First Name Is Required")
-            .Length(2, 10).WithMessage("First Name Is Must Be Between 2 and 10 Characters");
+            .Length(2, 20).WithMessage("First Name Is Must Be Between 2 and 20 Characters");
 
         RuleFor(x => x.LastName)
             .NotEmpty().WithMessage("Last Name Is Required")
-            .Length(2, 10).WithMessage("Last Name Is Must Be Between 2 and 10 Characters");
+            .Length(2, 20).WithMessage("Last Name Is Must Be Between 2 and 20 Characters");
 
         RuleFor(x => x.PhoneNumber).Length(11)
             .Matches(@"^0\d{10}$")

@@ -107,6 +107,7 @@ public class Program
         builder.Services.AddLogging();
         builder.Services.AddScoped<IFriendRequestService, FriendRequestService>();
         builder.Services.AddSignalR();
+        builder.Services.AddScoped<ICityService, CityService>();
 
 
 

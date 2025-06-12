@@ -42,6 +42,10 @@ public class FacilityService : IFacilityService
         if (!IsWithinCairo(lat, lng) && !IsWithinGiza(lat, lng))
             return ServiceResult<FacilityDto>.Fail("Facility location must be inside Cairo or Giza.");
 
+        if (!_allowedCities.Contains(facilityDto.Address.City))
+            return ServiceResult<FacilityDto>.Fail("Only facilities in Cairo or Giza are allowed.");
+
+
         var imagesFolder = Path.Combine(_env.WebRootPath, "images/facilities");
         if (!Directory.Exists(imagesFolder))
             Directory.CreateDirectory(imagesFolder);
@@ -127,7 +131,7 @@ public class FacilityService : IFacilityService
             : ServiceResult<bool>.Fail("Failed to delete facility.");
     }
 
-    public async Task<ServiceResult<List<FacilityDto>>> GetAllFacilities(bool isOwner, string ownerId, int? sportId)
+    public async Task<ServiceResult<List<FacilityDto>>> GetAllFacilities(bool isOwner, string ownerId, int? sportId, string? city)
     {
         try
         {
@@ -140,7 +144,7 @@ public class FacilityService : IFacilityService
                 ownerIdInt = parsedOwnerId;
             }
 
-            var spec = new FacilityWithOwnerAndSportFilterSpecification(isOwner, ownerIdInt, sportId);
+            var spec = new FacilityWithOwnerAndSportFilterSpecification(isOwner, ownerIdInt, sportId, city);
             var facilities = await _unitOfWork.Repository<Facility>().GetAllWithSpecAsync(spec);
 
             var facilityDtos = _mapper.Map<List<FacilityDto>>(facilities);
@@ -163,4 +167,38 @@ public class FacilityService : IFacilityService
         return latitude >= 29.85m && latitude <= 30.1m &&
                longitude >= 31.0m && longitude <= 31.3m;
     }
+
+    private readonly HashSet<string> _allowedCities = new(StringComparer.OrdinalIgnoreCase)
+    {
+        
+        "Cairo",
+        "Nasr City",
+        "Heliopolis",
+        "New Cairo",
+        "Maadi",
+        "Zamalek",
+        "Downtown",
+        "El Marg",
+        "Ain Shams",
+        "El Shorouk",
+        "Mokattam",
+        "Obour",
+        "Badr",
+        "Fifth Settlement",
+
+        
+        "Giza",
+        "Dokki",
+        "Mohandessin",
+        "Agouza",
+        "6th of October",
+        "Sheikh Zayed",
+        "Faisal",
+        "Haram",
+        "Imbaba",
+        "Warraq",
+        "Boulak El Dakrour"
+    };
+
+
 }

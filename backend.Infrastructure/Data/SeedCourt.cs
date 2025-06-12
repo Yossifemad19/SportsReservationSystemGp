@@ -77,7 +77,7 @@ public static class SeedCourts
             });
         }
 
-        // Step 2: Add more courts until total is 30
+        
         while (courts.Count < 30)
         {
             var facility = facilities[random.Next(facilities.Count)];
