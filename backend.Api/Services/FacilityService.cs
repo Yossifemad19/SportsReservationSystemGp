@@ -2,6 +2,7 @@
 using backend.Api.DTOs;
 using backend.Core.Entities;
 using backend.Core.Interfaces;
+using backend.Core.Specification;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Api.Services;
@@ -126,40 +127,30 @@ public class FacilityService : IFacilityService
             : ServiceResult<bool>.Fail("Failed to delete facility.");
     }
 
-    public async Task<ServiceResult<List<FacilityDto>>> GetAllFacilities(bool isOwner, string ownerId)
+    public async Task<ServiceResult<List<FacilityDto>>> GetAllFacilities(bool isOwner, string ownerId, int? sportId)
     {
-        if (isOwner)
+        try
         {
-            if (!int.TryParse(ownerId, out var ownerIdInt))
-                return ServiceResult<List<FacilityDto>>.Fail("Invalid owner ID.");
+            int? ownerIdInt = null;
+            
+            if (isOwner)
+            {
+                if (!int.TryParse(ownerId, out var parsedOwnerId))
+                    return ServiceResult<List<FacilityDto>>.Fail("Invalid owner ID.");
+                ownerIdInt = parsedOwnerId;
+            }
 
-            // Get IQueryable to build query
-            var query = _unitOfWork.Repository<Facility>().Query();
+            var spec = new FacilityWithOwnerAndSportFilterSpecification(isOwner, ownerIdInt, sportId);
+            var facilities = await _unitOfWork.Repository<Facility>().GetAllWithSpecAsync(spec);
 
-            // Filter facilities by owner ID
-            query = query.Where(f => f.OwnerId == ownerIdInt);
-
-            // Include Address navigation property
-            query = query.Include(f => f.Address);
-
-            // Execute query
-            var ownedFacilities = await query.ToListAsync();
-
-            var ownedDtos = _mapper.Map<List<FacilityDto>>(ownedFacilities);
-            return ServiceResult<List<FacilityDto>>.Ok(ownedDtos);
+            var facilityDtos = _mapper.Map<List<FacilityDto>>(facilities);
+            return ServiceResult<List<FacilityDto>>.Ok(facilityDtos);
         }
-
-        // Not owner? Just include Address and get all facilities
-        var allFacilities = await _unitOfWork.Repository<Facility>()
-            .GetAllIncludingAsync(f => f.Address);
-
-        var allDtos = _mapper.Map<List<FacilityDto>>(allFacilities);
-        return ServiceResult<List<FacilityDto>>.Ok(allDtos);
+        catch (Exception ex)
+        {
+            return ServiceResult<List<FacilityDto>>.Fail($"An error occurred while retrieving facilities: {ex.Message}");
+        }
     }
-
-
-
-
 
     private bool IsWithinCairo(decimal latitude, decimal longitude)
     {

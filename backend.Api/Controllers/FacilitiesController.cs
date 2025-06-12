@@ -83,11 +83,11 @@ public class FacilitiesController : ControllerBase
     //    return Ok(result);
     //}
     [HttpGet]
-    public async Task<IActionResult> GetAllFacilities([FromQuery] bool isOwner = false)
+    public async Task<IActionResult> GetAllFacilities([FromQuery] bool isOwner = false,int? sportId = null)
     {
         var ownerId = User.FindFirst("sub")?.Value;
 
-        var result = await _facilityService.GetAllFacilities(isOwner, ownerId);
+        var result = await _facilityService.GetAllFacilities(isOwner, ownerId, sportId);
 
         if (!result.Success)
             return BadRequest(result);

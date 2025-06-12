@@ -9,5 +9,5 @@ public interface IFacilityService
     Task<ServiceResult<FacilityDto>> CreateFacility(FacilityDto facilityDto, string ownerId);
     Task<ServiceResult<FacilityDto>> UpdateFacility(FacilityDto facilityDto, string ownerId);
     Task<ServiceResult<bool>> DeleteFacility(int id);
-    public Task<ServiceResult<List<FacilityDto>>> GetAllFacilities(bool isOwner, string ownerId);
+    public Task<ServiceResult<List<FacilityDto>>> GetAllFacilities(bool isOwner, string ownerId,int?sportId);
 }
