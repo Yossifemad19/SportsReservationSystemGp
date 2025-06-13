@@ -92,26 +92,29 @@ public class BookingService : IBookingService
         var bookings = await _unitOfWork.BookingRepository.GetBookingsForCourtAsync(courtId, date);
 
         // Group bookings by time slots
-        var groupedBookings = bookings
-            .Where(b => b.status != BookingStatus.Cancelled)
-            .GroupBy(b => b.StartTime.ToString(@"hh\:mm"))
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(b => new SlotBlockDto
-                {
-                    Id = b.Id,
-                    UserFullName = $"{b.User.FirstName} {b.User.LastName}",
-                    StartTime = b.StartTime,
-                    EndTime = b.EndTime
-                }).ToList()
-            );
+      var bookingSlots = bookings
+    .GroupBy(b => b.Date)
+    .OrderBy(group => group.Key)
+    .ToDictionary(
+        group => group.Key.ToString("yyyy-MM-dd"),
+        group => group.OrderBy(b => b.StartTime)
+            .Select(b => new SlotBlockDto
+            {
+                Id = b.Id,
+                UserFullName = $"{b.User.FirstName} {b.User.LastName}",
+                StartTime = b.StartTime.ToString(@"hh\:mm\:ss"),
+                EndTime = b.EndTime.ToString(@"hh\:mm\:ss")
+            })
+            .ToList()
+    );
 
-        return new BookingResponseDto
-        {
-            CourtId = courtId,
-            StartDate = date,
-            BookingSlots = groupedBookings
-        };
+return new BookingResponseDto
+{
+    CourtId = courtId,
+    StartDate = date,
+    BookingSlots = bookingSlots
+};
+
     }
 
     public async Task<(bool Success, string Message)> CancelBookingAsync(int bookingId, int userId)

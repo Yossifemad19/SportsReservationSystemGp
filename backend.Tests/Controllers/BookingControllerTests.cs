@@ -110,8 +110,8 @@ public class BookingControllerTests
                     date.ToString("yyyy-MM-dd"),
                     new List<SlotBlockDto>
                     {
-                        new() { StartTime = TimeSpan.FromHours(10), EndTime = TimeSpan.FromHours(11) },
-                        new() { StartTime = TimeSpan.FromHours(14), EndTime = TimeSpan.FromHours(15) }
+                        new() { StartTime = TimeSpan.FromHours(10).ToString(), EndTime = TimeSpan.FromHours(11).ToString() },
+                        new() { StartTime = TimeSpan.FromHours(14).ToString(), EndTime = TimeSpan.FromHours(15).ToString() }
                     }
                 }
             }
