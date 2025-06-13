@@ -6,3 +6,8 @@ riderModule.iml
 .env
 SportsReservationSystemGp.sln.DotSettings.user
 .vs/
+
+# Test Results
+[TestResults]/
+**/TestResults/
+**/TestResults/*
