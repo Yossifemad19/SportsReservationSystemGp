@@ -64,16 +64,16 @@ public static class SeedFacilities
 
         var imageUrls = new List<string>
     {
-        "images/facilities/Facility_1",
-        "images/facilities/Facility_2",
-        "images/facilities/Facility_3",
-        "images/facilities/Facility_4",
-        "images/facilities/Facility_5",
-        "images/facilities/Facility_6",
-        "images/facilities/Facility_7",
-        "images/facilities/Facility_8",
-        "images/facilities/Facility_9",
-        "images/facilities/Facility_10",
+        "images/facilities/Facility_1.jpg",
+        "images/facilities/Facility_2.jpg",
+        "images/facilities/Facility_3.jpg",
+        "images/facilities/Facility_4.jpg",
+        "images/facilities/Facility_5.jpg",
+        "images/facilities/Facility_6.jpg",
+        "images/facilities/Facility_7.jpg",
+        "images/facilities/Facility_8.jpg",
+        "images/facilities/Facility_9.jpg",
+        "images/facilities/Facility_10.jpg",
     };
 
         var facilities = new List<Facility>();
