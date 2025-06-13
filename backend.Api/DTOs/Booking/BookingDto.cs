@@ -12,6 +12,7 @@ public class BookingDto
     public DateOnly Date { get; set; }
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
+    public string City { get; set; }
     public string Status { get; set; }
     public decimal TotalPrice { get; set; }
 }

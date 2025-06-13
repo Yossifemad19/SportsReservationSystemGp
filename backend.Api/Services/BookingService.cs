@@ -184,6 +184,7 @@ public class BookingService : IBookingService
             CourtId = b.CourtId,
             CourtName = b.Court.Name,
             FacilityName = b.Court.Facility.Name,
+            City = b.Court.Facility.Address.City,
             Date = b.Date,
             StartTime = b.StartTime,
             EndTime = b.EndTime,

@@ -336,43 +336,61 @@ namespace backend.Infrastructure.Services
                     throw new InvalidOperationException("Match not found");
                 }
 
-
                 if (!await _friendRequestService.AreFriendsAsync(inviterUserId, invitedUserId))
                 {
                     throw new InvalidOperationException("You can only invite friends to the match");
                 }
 
-
-                //Check if inviter is creator or player
-               var inviterIsPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == inviterUserId) != null;
+                // Check if inviter is creator or player
+                var inviterIsPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == inviterUserId) != null;
                 if (match.CreatorUserId != inviterUserId && !inviterIsPlayer)
                 {
                     throw new InvalidOperationException("Only the match creator or players can invite others");
                 }
-
 
                 // Check if match is open
                 if (match.Status != MatchStatus.Open)
                 {
                     throw new InvalidOperationException("Cannot invite players to a match that is not open");
                 }
-                
-                // Check if player is already in the match
-                var existingPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == invitedUserId);
-                if (existingPlayer != null)
+
+                // Check if player is already active in the match (Accepted, Approved, CheckedIn)
+                var existingActivePlayer = await _matchPlayerRepository.FindAsync(mp =>
+                    mp.MatchId == matchId &&
+                    mp.UserId == invitedUserId &&
+                    (mp.Status == ParticipationStatus.Accepted ||
+                     mp.Status == ParticipationStatus.Approved ||
+                     mp.Status == ParticipationStatus.CheckedIn));
+
+                if (existingActivePlayer != null)
                 {
                     throw new InvalidOperationException("Player is already in the match");
                 }
-                
-                // Check if match is full
+
+                // Check if player has a pending invitation (Invited or Requested)
+                var existingPendingInvitation = await _matchPlayerRepository.FindAsync(mp =>
+                    mp.MatchId == matchId &&
+                    mp.UserId == invitedUserId &&
+                    (mp.Status == ParticipationStatus.Invited ||
+                     mp.Status == ParticipationStatus.Requested));
+
+                if (existingPendingInvitation != null)
+                {
+                    throw new InvalidOperationException("Player already has a pending invitation");
+                }
+
+                // Check if match is full (count only active players)
                 var currentPlayerCount = (await _matchPlayerRepository.GetAllAsync())
-                    .Count(mp => mp.MatchId == matchId && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
-                
+                    .Count(mp => mp.MatchId == matchId &&
+                                 (mp.Status == ParticipationStatus.Accepted ||
+                                  mp.Status == ParticipationStatus.Approved ||
+                                  mp.Status == ParticipationStatus.CheckedIn));
+
                 if (currentPlayerCount >= match.TeamSize * 2)
                 {
                     throw new InvalidOperationException("Match is full");
                 }
-                
+
                 // Add player as invited
                 var player = new MatchPlayer
                 {
@@ -381,10 +399,10 @@ namespace backend.Infrastructure.Services
                     Status = ParticipationStatus.Invited,
                     InvitedAt = DateTime.UtcNow
                 };
-                
+
                 _matchPlayerRepository.Add(player);
                 await _unitOfWork.Complete();
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -393,6 +411,7 @@ namespace backend.Infrastructure.Services
                 throw;
             }
         }
+
 
         public async Task<bool> RespondToInvitationAsync(int matchId, int userId, bool accept)
         {

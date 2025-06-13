@@ -31,8 +31,9 @@ public class MappingProfiles: Profile
     .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.Booking.StartTime))
     .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.Booking.EndTime))
     .ForMember(dest => dest.Players, opt => opt.MapFrom(src =>
-        src.Players
-           .Where(p => p.Status != ParticipationStatus.Kicked)
+    src.Players
+       .Where(p => p.Status == ParticipationStatus.Accepted || p.Status == ParticipationStatus.CheckedIn)
+
     ));
 
         CreateMap<MatchPlayer, MatchPlayerDto>()

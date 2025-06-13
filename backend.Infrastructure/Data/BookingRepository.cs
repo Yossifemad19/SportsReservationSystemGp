@@ -45,26 +45,27 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
 
     public async Task<IEnumerable<Booking>> GetUserBookingsAsync(int userId, BookingStatus? status = null)
     {
-        // Start with  base query
+        // Start with base query
         IQueryable<Booking> query = _context.Bookings
             .Where(b => b.UserId == userId);
-    
+
         // Apply status filter 
         if (status.HasValue)
         {
             query = query.Where(b => b.status == status.Value);
         }
-    
+
         // Add includes and ordering
         return await query
             .Include(b => b.Court)
-            .ThenInclude(c => c.Facility)
-            .Include(b=>b.User)
+                .ThenInclude(c => c.Facility)
+                    .ThenInclude(f => f.Address) 
+            .Include(b => b.User)
             .OrderByDescending(b => b.Date)
             .ThenBy(b => b.StartTime)
             .ToListAsync();
     }
-    
+
     public async Task<IEnumerable<Booking>> GetBookingsForFacilityAsync(int facilityId, DateOnly date)
     {
         return await _context.Bookings
