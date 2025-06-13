@@ -45,15 +45,6 @@ public class SeedOwners
         new Owner { FirstName = "Nada", LastName = "Hany", Email = "nada.hany@gmail.com", PhoneNumber = "01000999000", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
         new Owner { FirstName = "Tamer", LastName = "Fahmy", Email = "tamer.fahmy@gmail.com", PhoneNumber = "01001000111", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
         new Owner { FirstName = "Hana", LastName = "Khalil", Email = "hana.khalil@gmail.com", PhoneNumber = "01001111222", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Amr", LastName = "El-Masry", Email = "amr.masry@gmail.com", PhoneNumber = "01001222333", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Marwa", LastName = "Gamal", Email = "marwa.gamal@gmail.com", PhoneNumber = "01001333444", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Mostafa", LastName = "Ahmed", Email = "mostafa.ahmed@gmail.com", PhoneNumber = "01001444555", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Laila", LastName = "Hossam", Email = "laila.hossam@gmail.com", PhoneNumber = "01001555666", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Sherif", LastName = "Ramzy", Email = "sherif.ramzy@gmail.com", PhoneNumber = "01001666777", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Dina", LastName = "Reda", Email = "dina.reda@gmail.com", PhoneNumber = "01001777888", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Hassan", LastName = "Sami", Email = "hassan.sami@gmail.com", PhoneNumber = "01001888999", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Nour", LastName = "Ayman", Email = "nour.ayman@gmail.com", PhoneNumber = "01001999000", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true },
-        new Owner { FirstName = "Rania", LastName = "Yehia", Email = "rania.yehia@gmail.com", PhoneNumber = "01002000111", PasswordHash = ownerPasswordHash, UserRoleId = ownerRole.Id, IsApproved = true }
     };
 
         foreach (var owner in owners)

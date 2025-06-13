@@ -26,13 +26,15 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
     public async Task<IEnumerable<Booking>> GetBookingsForCourtAsync(int courtId, DateOnly date)
     {
         return await _context.Bookings
-            .Where(b => b.CourtId == courtId && 
-                       (b.Date >= date && b.Date <= date.AddDays(7)) &&
-                        b.status != BookingStatus.Cancelled) // Only show active bookings
+            .Where(b => b.CourtId == courtId &&
+                        (b.Date >= date && b.Date <= date.AddDays(7)) &&
+                        b.status != BookingStatus.Cancelled)
+            .Include(b => b.User)                
             .Include(b => b.Court)
             .Include(b => b.Court.Facility)
             .ToListAsync();
     }
+
 
     public async Task<Booking> GetBookingWithDetailsAsync(int bookingId)
     {

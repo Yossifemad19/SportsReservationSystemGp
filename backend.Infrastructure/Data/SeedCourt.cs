@@ -27,99 +27,69 @@ public static class SeedCourts
         if (!facilities.Any() || !sports.Any())
             return -1;
 
-        var random = new Random();
         var courts = new List<Court>();
 
-        var courtCounters = new Dictionary<string, int>
-    {
-        { "Football", 1 },
-        { "Basketball", 1 },
-        { "Tennis", 1 },
-        { "Volleyball", 1 },
-        { "Padel", 1 }
-    };
-
-        // Step 1: Ensure each facility has at least one court
         foreach (var facility in facilities)
         {
-            var sport = sports[random.Next(sports.Count)];
-            var sportName = sport.Name;
-            var courtNumber = courtCounters[sportName]++;
-            var courtName = $"{sportName} Court {courtNumber}";
-
-            decimal price = sportName switch
+            // Per-facility sport counters
+            var facilityCourtCounters = new Dictionary<string, int>
             {
-                "Football" => 200.00m,
-                "Basketball" => 200.00m,
-                "Tennis" => 200.00m,
-                "Volleyball" => 150.00m,
-                "Padel" => 300.00m,
-                _ => 200.00m
+                { "Football", 1 },
+                { "Basketball", 1 },
+                { "Tennis", 1 },
+                { "Volleyball", 1 },
+                { "Padel", 1 }
             };
 
-            int capacity = sportName switch
+            // Add one court per sport
+            foreach (var sport in sports)
             {
-                "Football" => 10,
-                "Basketball" => 10,
-                "Tennis" => 2,
-                "Volleyball" => 6,
-                "Padel" => 4,
-                _ => 10
-            };
+                var sportName = sport.Name;
+                var courtNumber = facilityCourtCounters[sportName]++;
+                var courtName = $"{sportName} Court {courtNumber}";
+
+                decimal price = sportName switch
+                {
+                    "Football" => 200.00m,
+                    "Basketball" => 200.00m,
+                    "Tennis" => 200.00m,
+                    "Volleyball" => 150.00m,
+                    "Padel" => 300.00m,
+                    _ => 200.00m
+                };
+
+                int capacity = sportName switch
+                {
+                    "Football" => 10,
+                    "Basketball" => 10,
+                    "Tennis" => 2,
+                    "Volleyball" => 6,
+                    "Padel" => 4,
+                    _ => 10
+                };
+
+                courts.Add(new Court
+                {
+                    Name = courtName,
+                    FacilityId = facility.Id,
+                    SportId = sport.Id,
+                    Capacity = capacity,
+                    PricePerHour = price
+                });
+            }
+
+            
+            var football = sports.First(s => s.Name == "Football");
+            var extraFootballNumber = facilityCourtCounters["Football"]++;
+            var extraFootballName = $"Football Court {extraFootballNumber}";
 
             courts.Add(new Court
             {
-                Name = courtName,
+                Name = extraFootballName,
                 FacilityId = facility.Id,
-                SportId = sport.Id,
-                Capacity = capacity,
-                PricePerHour = price
-            });
-        }
-
-        
-        while (courts.Count < 30)
-        {
-            var facility = facilities[random.Next(facilities.Count)];
-
-            Sport sport;
-            int chance = random.Next(100);
-            if (chance < 50)
-                sport = sports.First(s => s.Name == "Football");
-            else
-                sport = sports[random.Next(sports.Count)];
-
-            var sportName = sport.Name;
-            var courtNumber = courtCounters[sportName]++;
-            var courtName = $"{sportName} Court {courtNumber}";
-
-            decimal price = sportName switch
-            {
-                "Football" => 200.00m,
-                "Basketball" => 200.00m,
-                "Tennis" => 200.00m,
-                "Volleyball" => 150.00m,
-                "Padel" => 300.00m,
-                _ => 200.00m
-            };
-
-            int capacity = sportName switch
-            {
-                "Football" => 10,
-                "Basketball" => 10,
-                "Tennis" => 2,
-                "Volleyball" => 6,
-                "Padel" => 4,
-                _ => 10
-            };
-
-            courts.Add(new Court
-            {
-                Name = courtName,
-                FacilityId = facility.Id,
-                SportId = sport.Id,
-                Capacity = capacity,
-                PricePerHour = price
+                SportId = football.Id,
+                Capacity = 10,
+                PricePerHour = 200.00m
             });
         }
 
@@ -128,8 +98,8 @@ public static class SeedCourts
 
         return await unitOfWork.Complete();
     }
-
 }
+
 
 
 

@@ -90,9 +90,12 @@ public class BookingService : IBookingService
                 group => group.Key.ToString("yyyy-MM-dd"), 
                 group => group.OrderBy(b => b.StartTime) 
                     .Select(b => new SlotBlockDto 
-                    { 
+                    {
+                        Id = b.Id,
+                        UserFullName = $"{b.User.FirstName} {b.User.LastName}",
                         StartTime = b.StartTime, 
-                        EndTime = b.EndTime 
+                        EndTime = b.EndTime,
+                        
                     })
                     .ToList()
             );

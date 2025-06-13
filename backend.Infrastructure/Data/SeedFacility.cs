@@ -8,6 +8,7 @@ using backend.Core.Interfaces;
 
 namespace backend.Repository.Data;
 
+
 public static class SeedFacilities
 {
     public static async Task<int> SeedFacilitiesData(IUnitOfWork unitOfWork)
@@ -28,9 +29,9 @@ public static class SeedFacilities
         }
 
         var ownersList = owners.ToList();
-        if (ownersList.Count < 20)
+        if (ownersList.Count < 10)
         {
-            return -2; // Not enough owners
+            return -2;
         }
 
         var facilityNames = new List<string>
@@ -44,17 +45,7 @@ public static class SeedFacilities
         "Victory Sports City",
         "Heliopolis Sports Union",
         "Masr Sports Academy",
-        "El Nasr Sports Hub",
-        "Maadi Fitness & Sports Park",
-        "Champions Sports Village",
-        "New Cairo Multi-Sports Club",
-        "Tagamoa Sports Hall",
-        "Wadi Degla Sports Center",
-        "Pyramids Athletic Club",
-        "Al Qahera Sports Fields",
-        "Golden Goal Arena",
-        "October Sports Complex",
-        "Future Athletes Center"
+        "El Nasr Sports Hub"
     };
 
         var addresses = new List<(string Street, string City, decimal Lat, decimal Lng)>
@@ -68,22 +59,26 @@ public static class SeedFacilities
         ("Gamal Abdel Nasser St", "Giza", 30.0200m, 31.2000m),
         ("Al Manial St", "Cairo", 30.0254m, 31.2234m),
         ("October 6th Bridge", "Cairo", 30.0600m, 31.2300m),
-        ("Abbas El Akkad St", "Cairo", 30.0565m, 31.3352m),
-        ("El Talbia St", "Giza", 29.9911m, 31.1500m),
-        ("Dokki St", "Giza", 30.0347m, 31.2155m),
-        ("Sphinx Sq", "Giza", 30.0424m, 31.2103m),
-        ("Mohandessin St", "Giza", 30.0563m, 31.2035m),
-        ("Zamalek St", "Cairo", 30.0612m, 31.2221m),
-        ("Heliopolis Sq", "Cairo", 30.1004m, 31.3284m),
-        ("Nasr City Main Rd", "Cairo", 30.0519m, 31.3771m),
-        ("Maadi Corniche", "Cairo", 29.9633m, 31.2610m),
-        ("El Rehab Gate 9", "Cairo", 30.0301m, 31.4911m),
-        ("Shubra St", "Cairo", 30.0843m, 31.2474m)
+        ("Abbas El Akkad St", "Cairo", 30.0565m, 31.3352m)
+    };
+
+        var imageUrls = new List<string>
+    {
+        "images/facilities/Facility_1",
+        "images/facilities/Facility_2",
+        "images/facilities/Facility_3",
+        "images/facilities/Facility_4",
+        "images/facilities/Facility_5",
+        "images/facilities/Facility_6",
+        "images/facilities/Facility_7",
+        "images/facilities/Facility_8",
+        "images/facilities/Facility_9",
+        "images/facilities/Facility_10",
     };
 
         var facilities = new List<Facility>();
 
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 10; i++)
         {
             var (street, city, lat, lng) = addresses[i];
 
@@ -91,7 +86,7 @@ public static class SeedFacilities
             {
                 Name = facilityNames[i],
                 OwnerId = ownersList[i].Id,
-                ImageUrl = "images/facilities/400d0b97-5b45-4c74-8c5e-3487a48a2f61-download (2).jpeg", 
+                ImageUrl = imageUrls[i],
                 OpeningTime = new TimeSpan(8, 0, 0),
                 ClosingTime = new TimeSpan(22, 0, 0),
                 Address = new Address
@@ -111,7 +106,9 @@ public static class SeedFacilities
 
         return await unitOfWork.Complete();
     }
-
 }
+
+
+
 
 

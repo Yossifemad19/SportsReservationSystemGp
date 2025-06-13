@@ -172,32 +172,8 @@ public class FacilityService : IFacilityService
     {
         
         "Cairo",
-        "Nasr City",
-        "Heliopolis",
-        "New Cairo",
-        "Maadi",
-        "Zamalek",
-        "Downtown",
-        "El Marg",
-        "Ain Shams",
-        "El Shorouk",
-        "Mokattam",
-        "Obour",
-        "Badr",
-        "Fifth Settlement",
-
-        
         "Giza",
-        "Dokki",
-        "Mohandessin",
-        "Agouza",
-        "6th of October",
-        "Sheikh Zayed",
-        "Faisal",
-        "Haram",
-        "Imbaba",
-        "Warraq",
-        "Boulak El Dakrour"
+        
     };
 
 
