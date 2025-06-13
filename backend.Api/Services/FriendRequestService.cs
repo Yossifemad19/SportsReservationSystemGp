@@ -124,10 +124,11 @@ public class FriendRequestService : IFriendRequestService
 
     public async Task<List<FriendRequestDto>> GetAcceptedFriendRequestsAsync(int userId)
     {
-        var spec = new FriendRequestSpec(userId, FriendRequestStatus.Accepted);
+        var spec = new FriendRequestSpec(userId); // use the correct constructor
         var requests = await _unitOfWork.Repository<FriendRequest>().GetAllWithSpecAsync(spec);
         return _mapper.Map<List<FriendRequestDto>>(requests);
     }
+
 
     public async Task<bool> AreFriendsAsync(int userId1, int userId2)
     {
