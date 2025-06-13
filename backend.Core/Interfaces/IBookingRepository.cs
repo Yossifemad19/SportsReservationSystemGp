@@ -12,4 +12,5 @@ public interface IBookingRepository : IGenericRepository<Booking>
     Task<Booking> GetBookingWithDetailsAsync(int bookingId);
     Task<IEnumerable<Booking>> GetUserBookingsAsync(int userId, BookingStatus? status = null);
     Task<IEnumerable<Booking>> GetBookingsForFacilityAsync(int facilityId, DateOnly date);
+    Task<IEnumerable<Booking>> GetNoShowBookingsAsync(DateOnly currentDate, TimeOnly currentTime);
 }

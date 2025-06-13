@@ -1,3 +1,7 @@
+using System;
+
+namespace backend.Api.DTOs.Booking;
+
 public class BookingRequestDto
 {
     public int CourtId { get; set; }

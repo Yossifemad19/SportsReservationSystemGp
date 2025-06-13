@@ -48,14 +48,14 @@ public class BookingControllerTests
         };
 
         _mockBookingService.Setup(service => service.BookCourtAsync(request, userId))
-            .ReturnsAsync((true, "Booking successful"));
+            .ReturnsAsync((true, "Booking created successfully"));
 
         // Act
         var result = await _controller.BookCourt(request);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal("Booking successful", okResult.Value);
+        Assert.Equal("Booking created successfully", okResult.Value);
     }
 
     [Fact]
@@ -239,15 +239,16 @@ public class BookingControllerTests
         };
 
         _mockBookingService.Setup(service => service.GetUserBookingsAsync(userId, null))
-            .ReturnsAsync(expectedBookings);
+            .ReturnsAsync(expectedBookings.Cast<object>());
 
         // Act
         var result = await _controller.GetUserBookings();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnValue = Assert.IsType<List<BookingDto>>(okResult.Value);
-        Assert.Equal(2, returnValue.Count);
+        var returnValue = Assert.IsAssignableFrom<IEnumerable<object>>(okResult.Value);
+        var bookingsList = returnValue.Cast<BookingDto>().ToList();
+        Assert.Equal(2, bookingsList.Count);
     }
 
     [Fact]
@@ -287,16 +288,17 @@ public class BookingControllerTests
         };
 
         _mockBookingService.Setup(service => service.GetUserBookingsAsync(userId, BookingStatus.Confirmed))
-            .ReturnsAsync(expectedBookings);
+            .ReturnsAsync(expectedBookings.Cast<object>());
 
         // Act
         var result = await _controller.GetUserBookings(status);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnValue = Assert.IsType<List<BookingDto>>(okResult.Value);
-        Assert.Single(returnValue);
-        Assert.Equal(BookingStatus.Confirmed.ToString(), returnValue[0].Status);
+        var returnValue = Assert.IsAssignableFrom<IEnumerable<object>>(okResult.Value);
+        var bookingsList = returnValue.Cast<BookingDto>().ToList();
+        Assert.Single(bookingsList);
+        Assert.Equal(BookingStatus.Confirmed.ToString(), bookingsList[0].Status);
     }
 
     [Fact]
@@ -366,15 +368,16 @@ public class BookingControllerTests
         };
 
         _mockBookingService.Setup(service => service.GetBookingsForFacilityAsync(facilityId, date))
-            .ReturnsAsync(expectedBookings);
+            .ReturnsAsync(expectedBookings.Cast<object>());
 
         // Act
         var result = await _controller.GetFacilityBookings(facilityId, date);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnValue = Assert.IsType<List<BookingDto>>(okResult.Value);
-        Assert.Single(returnValue);
+        var returnValue = Assert.IsAssignableFrom<IEnumerable<object>>(okResult.Value);
+        var bookingsList = returnValue.Cast<BookingDto>().ToList();
+        Assert.Single(bookingsList);
     }
 
     [Fact]
@@ -415,14 +418,15 @@ public class BookingControllerTests
         };
 
         _mockBookingService.Setup(service => service.GetBookingsForFacilityAsync(facilityId, today))
-            .ReturnsAsync(expectedBookings);
+            .ReturnsAsync(expectedBookings.Cast<object>());
 
         // Act
         var result = await _controller.GetFacilityBookings(facilityId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnValue = Assert.IsType<List<BookingDto>>(okResult.Value);
-        Assert.Single(returnValue);
+        var returnValue = Assert.IsAssignableFrom<IEnumerable<object>>(okResult.Value);
+        var bookingsList = returnValue.Cast<BookingDto>().ToList();
+        Assert.Single(bookingsList);
     }
 } 

@@ -1,4 +1,7 @@
-using backend.Api.DTOs.Booking;
+using System;
+using System.Collections.Generic;
+
+namespace backend.Api.DTOs.Booking;
 
 public class BookingResponseDto
 {
@@ -6,5 +9,5 @@ public class BookingResponseDto
     public DateOnly StartDate { get; set; }
     // public TimeSpan OpeningTime { get; set; }
     // public TimeSpan ClosingTime { get; set; }
-    public Dictionary<string, List<SlotBlockDto>> BookingSlots { get; set; }
+    public Dictionary<string, List<SlotBlockDto>> BookingSlots { get; set; } = new();
 }

@@ -1,7 +1,7 @@
-using backend.Api.DTOs.Booking;
-using backend.Core.Entities;
 using backend.Core.Interfaces;
-using backend.Core.Specification;
+using backend.Core.Entities;
+using backend.Api.DTOs.Booking;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,102 +12,105 @@ namespace backend.Api.Services;
 public class BookingService : IBookingService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private const int NO_SHOW_BLOCK_DAYS = 30; // Block user for 30 days after a no-show
 
     public BookingService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    
-    public async Task<(bool Success, string Message)> BookCourtAsync(BookingRequestDto request, int userId)
+    public async Task<(bool Success, string Message)> BookCourtAsync(object request, int userId)
     {
-        // Check if starttime greater than or equal endTime
-        if (request.StartTime >= request.EndTime)
-            return (false, "Start time must be before end time");
+        var bookingRequest = (BookingRequestDto)request;
         
-        // Check if the court exists
-        var spec = new CourtWithFacilitySpecification(request.CourtId);
-        var court = await _unitOfWork.Repository<Court>().GetByIdWithSpecAsync(spec);
-        if (court == null) return (false, "Court not found");
+        // Check if user is blocked
+        var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+        if (user == null)
+            return (false, "User not found");
 
-        // Check facility opening hours
-        if (request.StartTime < court.Facility.OpeningTime || request.EndTime > court.Facility.ClosingTime)
-            return (false, "Booking outside facility hours"); 
+        if (user.IsBlocked && user.BlockEndDate > DateTime.Now)
+            return (false, $"You are blocked until {user.BlockEndDate:yyyy-MM-dd} due to previous no-shows");
 
-        // Start transaction with serializable isolation level to prevent concurrent bookings
+        // If user was blocked but block period has expired, unblock them
+        if (user.IsBlocked && user.BlockEndDate <= DateTime.Now)
+        {
+            user.IsBlocked = false;
+            user.BlockEndDate = null;
+            _unitOfWork.Repository<User>().Update(user);
+        }
+
+        // Validate court exists and is active
+        var court = await _unitOfWork.Repository<Court>().GetByIdAsync(bookingRequest.CourtId);
+        if (court == null)
+            return (false, "Court not found");
+
+        // Check if court is available for the requested time
+        var isAvailable = await _unitOfWork.BookingRepository.IsCourtAvailableAsync(
+            bookingRequest.CourtId, bookingRequest.Date, bookingRequest.StartTime, bookingRequest.EndTime);
+
+        if (!isAvailable)
+            return (false, "Court is not available for the requested time");
+
+        // Create booking
+        var booking = new Booking
+        {
+            UserId = userId,
+            CourtId = bookingRequest.CourtId,
+            Date = bookingRequest.Date,
+            StartTime = bookingRequest.StartTime,
+            EndTime = bookingRequest.EndTime,
+            status = BookingStatus.Pending,
+            CheckInTime = DateTime.UtcNow
+        };
+
+        // Start transaction for concurrency control
         using var transaction = await _unitOfWork.BeginTransactionAsync();
         try
         {
-            // Double check availability within transaction
-            bool isAvailable = await _unitOfWork.BookingRepository.IsCourtAvailableAsync(request.CourtId, request.Date, request.StartTime, request.EndTime);
-            if (!isAvailable) 
-            {
-                await transaction.RollbackAsync();
-                return (false, "Court is not available at the requested time");
-            }
-
-            // Create booking
-            var booking = new Booking
-            {
-                CourtId = request.CourtId,
-                Date = request.Date,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
-                UserId = userId,
-                status = BookingStatus.Pending // initial value
-            };
-
             _unitOfWork.Repository<Booking>().Add(booking);
-            
-            // Save changes
             var result = await _unitOfWork.Complete();
+
             if (result <= 0)
             {
                 await transaction.RollbackAsync();
-                return (false, "Failed to save booking");
+                return (false, "Failed to create booking");
             }
 
             await transaction.CommitAsync();
-            return (true, "Booking successful");
+            return (true, "Booking created successfully");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            return (false, "An error occurred while processing your booking. Please try again.");
+            return (false, $"Error creating booking: {ex.Message}");
         }
     }
 
-    public async Task<BookingResponseDto> GetBookingsForCourtAsync(int courtId, DateOnly date)
+    public async Task<object> GetBookingsForCourtAsync(int courtId, DateOnly date)
     {
-        // Get bookings for court with specific date
+        // Get bookings for the specific court and date
         var bookings = await _unitOfWork.BookingRepository.GetBookingsForCourtAsync(courtId, date);
-        
-        // Select specific fields for booking 
-        var bookingSlots = bookings
-            .GroupBy(b => b.Date)
-            .OrderBy(group => group.Key) 
+
+        // Group bookings by time slots
+        var groupedBookings = bookings
+            .Where(b => b.status != BookingStatus.Cancelled)
+            .GroupBy(b => b.StartTime.ToString(@"hh\:mm"))
             .ToDictionary(
-                group => group.Key.ToString("yyyy-MM-dd"), 
-                group => group.OrderBy(b => b.StartTime) 
-                    .Select(b => new SlotBlockDto 
-                    {
-                        Id = b.Id,
-                        UserFullName = $"{b.User.FirstName} {b.User.LastName}",
-                        StartTime = b.StartTime, 
-                        EndTime = b.EndTime,
-                        
-                    })
-                    .ToList()
+                g => g.Key,
+                g => g.Select(b => new SlotBlockDto
+                {
+                    Id = b.Id,
+                    UserFullName = $"{b.User.FirstName} {b.User.LastName}",
+                    StartTime = b.StartTime,
+                    EndTime = b.EndTime
+                }).ToList()
             );
-        
-        // Get facility opening/closing times 
-        // var facilityTimes = bookings.FirstOrDefault()?.Court?.Facility;
-        
-        return new BookingResponseDto()
+
+        return new BookingResponseDto
         {
             CourtId = courtId,
             StartDate = date,
-            BookingSlots = bookingSlots
+            BookingSlots = groupedBookings
         };
     }
 
@@ -174,7 +177,7 @@ public class BookingService : IBookingService
         return (true, "Booking confirmed successfully");
     }
     
-    public async Task<IEnumerable<BookingDto>> GetUserBookingsAsync(int userId, BookingStatus? status = null)
+    public async Task<IEnumerable<object>> GetUserBookingsAsync(int userId, BookingStatus? status = null)
     {
         // Get user bookings 
         var bookings = await _unitOfWork.BookingRepository.GetUserBookingsAsync(userId, status);
@@ -182,18 +185,18 @@ public class BookingService : IBookingService
         return bookings.Select(b => new BookingDto
         {
             Id = b.Id,
+            UserName = $"{b.User.FirstName} {b.User.LastName}",
             UserId = b.UserId,
-            UserName = b.User?.FirstName+"_"+b.User?.LastName,
-            CourtId = b.CourtId,
             CourtName = b.Court.Name,
             FacilityName = b.Court.Facility.Name,
-            City = b.Court.Facility.Address.City,
             Date = b.Date,
             StartTime = b.StartTime,
-            EndTime = b.EndTime,
+            City = b.Court.Facility.Address.City,
             Status = b.status.ToString(),
-            TotalPrice = CalculateTotalPrice(b)
-        }).ToList();
+            EndTime = b.EndTime,
+            TotalPrice = CalculateTotalPrice(b),
+            CheckIn = b.CheckInTime
+        });
     }
     
     // for confirm attend the booking
@@ -232,7 +235,7 @@ public class BookingService : IBookingService
             
         // Update status to completed 
         booking.status = BookingStatus.Completed;
-        booking.CheckInTime = DateTime.Now;
+        booking.CheckInTime = DateTime.UtcNow;
         
         _unitOfWork.Repository<Booking>().Update(booking);
         
@@ -244,26 +247,26 @@ public class BookingService : IBookingService
     }
     
     
-    public async Task<IEnumerable<BookingDto>> GetBookingsForFacilityAsync(int facilityId, DateOnly date)
+    public async Task<IEnumerable<object>> GetBookingsForFacilityAsync(int facilityId, DateOnly date)
     {
-        // Get all bookings for the facility with specific date 
+        // Get bookings for facility with specific date
         var bookings = await _unitOfWork.BookingRepository.GetBookingsForFacilityAsync(facilityId, date);
-    
-       
+        
         return bookings.Select(b => new BookingDto
         {
             Id = b.Id,
-            CourtId = b.CourtId,
+            UserName = $"{b.User.FirstName} {b.User.LastName}",
+            UserId = b.UserId,
             CourtName = b.Court.Name,
             FacilityName = b.Court.Facility.Name,
             Date = b.Date,
             StartTime = b.StartTime,
-            EndTime = b.EndTime,
+            City = b.Court.Facility.Address.City,
             Status = b.status.ToString(),
+            EndTime = b.EndTime,
             TotalPrice = CalculateTotalPrice(b),
-            UserId = b.UserId,
-            UserName = b.User?.FirstName+"_"+b.User?.LastName 
-        }).ToList();
+            CheckIn = b.CheckInTime
+        });
     }
     private decimal CalculateTotalPrice(Booking booking)
     {
@@ -274,5 +277,32 @@ public class BookingService : IBookingService
         return (decimal)durationHours * booking.Court.PricePerHour;
     }
     
-    
+    // New method to handle no-shows
+    public async Task HandleNoShowsAsync()
+    {
+        var currentTime = DateTime.Now;
+        var currentDate = DateOnly.FromDateTime(currentTime);
+        var currentTimeOnly = TimeOnly.FromDateTime(currentTime);
+
+        // Get all confirmed bookings that have ended without check-in
+        var noShowBookings = await _unitOfWork.BookingRepository.GetNoShowBookingsAsync(currentDate, currentTimeOnly);
+
+        foreach (var booking in noShowBookings)
+        {
+            // Update booking status to NoShow
+            booking.status = BookingStatus.NoShow;
+            _unitOfWork.Repository<Booking>().Update(booking);
+
+            // Block the user
+            var user = await _unitOfWork.Repository<User>().GetByIdAsync(booking.UserId);
+            if (user != null)
+            {
+                user.IsBlocked = true;
+                user.BlockEndDate = DateTime.Now.AddDays(NO_SHOW_BLOCK_DAYS);
+                _unitOfWork.Repository<User>().Update(user);
+            }
+        }
+
+        await _unitOfWork.Complete();
+    }
 }

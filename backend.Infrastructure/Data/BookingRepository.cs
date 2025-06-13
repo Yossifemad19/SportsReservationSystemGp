@@ -79,4 +79,15 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
             .ThenBy(b => b.StartTime)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Booking>> GetNoShowBookingsAsync(DateOnly currentDate, TimeOnly currentTime)
+    {
+        return await _context.Bookings
+            .Include(b => b.User)
+            .Where(b => b.status == BookingStatus.Confirmed &&
+                       (b.Date < currentDate || 
+                        (b.Date == currentDate && b.EndTime < currentTime.ToTimeSpan())) &&
+                       b.CheckInTime == null)
+            .ToListAsync();
+    }
 }

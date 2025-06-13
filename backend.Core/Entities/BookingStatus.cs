@@ -11,5 +11,9 @@ public enum BookingStatus
     [EnumMember(Value = "Cancelled")]
     Cancelled,
     [EnumMember(Value = "Completed")]
-    Completed
+    Completed,
+    [EnumMember(Value = "NoShow")]
+    NoShow,
+    [EnumMember(Value = "Blocked")]
+    Blocked
 }

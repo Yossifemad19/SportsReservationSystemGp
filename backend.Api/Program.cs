@@ -109,10 +109,8 @@ public class Program
         builder.Services.AddSignalR();
         builder.Services.AddScoped<ICityService, CityService>();
 
-
-
-
-
+        // Register the background service
+        builder.Services.AddHostedService<NoShowBackgroundService>();
 
         builder.Services.AddControllers()
             .AddFluentValidation(f => {

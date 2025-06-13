@@ -29,6 +29,8 @@ public class User : BaseEntity
     public string? ResetToken { get; set; }
     public DateTime? ResetTokenExpiry { get; set; }
 
+    public bool IsBlocked { get; set; } = false;
+    public DateTime? BlockEndDate { get; set; }
 
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }
