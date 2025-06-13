@@ -7,7 +7,7 @@ COPY *.sln ./
 COPY backend.Core/*.csproj backend.Core/
 COPY backend.Infrastructure/*.csproj backend.Infrastructure/
 COPY backend.Api/*.csproj backend.Api/
-
+COPY backend.Tests/*.csproj backend.Tests/
 # Restore dependencies
 RUN dotnet restore
 
