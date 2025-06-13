@@ -25,7 +25,14 @@ namespace backend.Core.Entities
         public DateTime InvitedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ResponseAt { get; set; }
         public DateTime? CheckedInAt { get; set; }
+
         
+        public int? InvitedByUserId { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public User? InvitedByUser { get; set; }
+
+
         public string? Team { get; set; } // e.g., "A" or "B"
         public bool WasKicked { get; set; } = false;
     }

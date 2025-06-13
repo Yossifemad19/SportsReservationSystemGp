@@ -41,5 +41,6 @@ namespace backend.Core.Interfaces
         Task<bool> StartMatchAsync(int matchId, int userId);
         public Task KickPlayerAsync(int matchId, int creatorUserId, int targetUserId);
         public Task<bool> LeaveMatchAsync(int matchId, int userId);
+        public Task<List<MatchInvitationDto>> GetUserInvitationsAsync(int userId);
     }
 } 

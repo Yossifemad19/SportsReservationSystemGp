@@ -306,6 +306,30 @@ namespace backend.API.Controllers
             }
         }
 
+        [HttpGet("match/invitations")]
+        public async Task<IActionResult> GetUserInvitations()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst("sub")?.Value;
+                if (!int.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new { Error = "Invalid or missing user ID in token." });
+                }
+
+                var invitations = await _matchService.GetUserInvitationsAsync(userId);
+                return Ok(invitations);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching invitations for user");
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
+
+
+
         [HttpPost("{matchId}/join")]
         public async Task<IActionResult> RequestToJoin(int matchId, [FromBody] JoinMatchRequest request)
         {

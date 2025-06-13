@@ -397,7 +397,8 @@ namespace backend.Infrastructure.Services
                     MatchId = matchId,
                     UserId = invitedUserId,
                     Status = ParticipationStatus.Invited,
-                    InvitedAt = DateTime.UtcNow
+                    InvitedAt = DateTime.UtcNow,
+                    InvitedByUserId = inviterUserId
                 };
 
                 _matchPlayerRepository.Add(player);
@@ -444,6 +445,47 @@ namespace backend.Infrastructure.Services
                 throw;
             }
         }
+
+
+        public async Task<List<MatchInvitationDto>> GetUserInvitationsAsync(int userId)
+        {
+            try
+            {
+                var spec = new MatchPlayersSpecification(userId, ParticipationStatus.Invited);
+
+                  
+                var invitations = await _matchPlayerRepository.GetAllWithSpecAsync(spec);
+
+                var invitationDtos = invitations.Select(invitation =>
+                {
+                    var match = invitation.Match;
+                    var sport = match?.Sport;
+                    var inviter = invitation.InvitedByUser;
+
+                    return new MatchInvitationDto
+                    {
+                        MatchId = match?.Id ?? 0,
+                        MatchTitle = match?.Title ?? "Unknown",
+                        SportId = sport?.Id ?? 0,
+                        SportName = sport?.Name ?? "Unknown",
+                        InviterId = inviter?.Id ?? 0,
+                        InviterName = inviter?.UserName ?? "Unknown" // Fixed the issue by directly accessing UserName  
+                    };
+                }).ToList();
+
+                return invitationDtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving invitations for user {UserId}", userId);
+                throw;
+            }
+        }  
+
+
+
+
+
 
         /*
         public async Task<bool> RequestToJoinMatchAsync(int matchId, int userId)
