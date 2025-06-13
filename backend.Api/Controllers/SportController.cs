@@ -38,7 +38,7 @@ public class SportController : ControllerBase
         if (sportDto.Image != null)
         {
             
-            var imagesFolder = Path.Combine(_env.WebRootPath, "images", "sports");
+            var imagesFolder = Path.Combine(_env.WebRootPath, "images", "Sports");
             if (!Directory.Exists(imagesFolder))
                 Directory.CreateDirectory(imagesFolder);
 
@@ -55,7 +55,7 @@ public class SportController : ControllerBase
             }
 
             
-            relativePath = $"images/sports/{imageFile}";
+            relativePath = $"images/Sports/{imageFile}";
         }
 
         var sport = new Sport
@@ -85,22 +85,44 @@ public class SportController : ControllerBase
     [HttpPut("Update")]
     public async Task<IActionResult> UpdateSport(SportDto sportDto)
     {
-
         var existingSport = await _unitOfWork.Repository<Sport>().GetByIdAsync(sportDto.Id);
         if (existingSport == null)
         {
-            return NotFound(new ApiResponse(404,"Sport not found"));
+            return NotFound(new ApiResponse(404, "Sport not found"));
         }
 
+        string? relativePath = null;
+
+        if (sportDto.Image != null)
+        {
+            var imagesFolder = Path.Combine(_env.WebRootPath, "images", "Sports");
+            if (!Directory.Exists(imagesFolder))
+                Directory.CreateDirectory(imagesFolder);
+
+            var imageFile = $"{Guid.NewGuid()}-{sportDto.Image.FileName}";
+            var filePath = Path.Combine(imagesFolder, imageFile);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await sportDto.Image.CopyToAsync(fileStream);
+            }
+
+            relativePath = $"images/Sports/{imageFile}";
+        }
 
         existingSport.Name = sportDto.Name;
 
+        if (relativePath != null)
+        {
+            existingSport.ImageUrl = relativePath;
+        }
 
         _unitOfWork.Repository<Sport>().Update(existingSport);
         await _unitOfWork.Complete();
 
         return Ok("Sport updated successfully");
     }
+
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSportById(int id)

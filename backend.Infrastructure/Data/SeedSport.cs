@@ -18,7 +18,7 @@ public static class SeedSports
         if (existingSports.Any())
             return 0;
 
-        var imageFolder = "images/sports"; 
+        var imageFolder = "images/Sports";
 
         var sports = new List<Sport>
         {
