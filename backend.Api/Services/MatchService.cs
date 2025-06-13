@@ -10,6 +10,7 @@ using backend.Core.Interfaces;
 using backend.Core.Specification;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+using backend.Api.Exceptions;
 
 namespace backend.Infrastructure.Services
 {
@@ -47,24 +48,23 @@ namespace backend.Infrastructure.Services
             {
                 // Validate booking exists and belongs to the creator
                 var booking = await _bookingRepository.FindAsync(b => b.Id == bookingId && b.UserId == creatorUserId);
-                if (booking == null)
-                {
-                    throw new InvalidOperationException("Booking not found or does not belong to the user");
-                }
+
 
                 // Check if booking already has a match
                 var existingMatch = await _matchRepository.FindAsync(m => m.BookingId == bookingId);
-                if (existingMatch != null)
-                {
-                    throw new InvalidOperationException("A match already exists for this booking");
-                }
 
                 // Validate sport exists
                 var sport = await _unitOfWork.Repository<Sport>().GetByIdAsync(sportId);
+                
+                if (booking == null)
+                    throw new BadRequestException("Booking not found or does not belong to the user");
+
+                if (existingMatch != null)
+                    throw new BadRequestException("A match already exists for this booking");
+
                 if (sport == null)
-                {
-                    throw new InvalidOperationException("Sport not found");
-                }
+                    throw new BadRequestException("Sport not found");
+
 
                 var match = new Match
                 {

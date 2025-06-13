@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using backend.Api.Errors;
+using backend.Api.Exceptions;
 
 namespace backend.API.Controllers
 {
@@ -34,6 +35,7 @@ namespace backend.API.Controllers
             _unitOfWork = unitOfWork;
         }
 
+        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> CreateMatch([FromBody] CreateMatchRequest request)
         {
@@ -71,12 +73,17 @@ namespace backend.API.Controllers
                 var matchDto = _mapper.Map<MatchDto>(match);
                 return Ok(matchDto);
             }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(new ApiResponse(400, ex.Message));
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating match");
                 return StatusCode(500, new ApiResponse(500, "An error occurred while creating the match"));
             }
         }
+
 
         [HttpPost("{matchId}/leave")]
         public async Task<IActionResult> LeaveMatch(int matchId)
