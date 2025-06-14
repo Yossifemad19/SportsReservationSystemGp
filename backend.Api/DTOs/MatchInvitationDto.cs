@@ -11,4 +11,8 @@ public class MatchInvitationDto
 
     public int InviterId { get; set; }
     public string InviterName { get; set; }
+    public TimeSpan? BookingStartTime { get; set; }
+    public TimeSpan? BookingEndTime { get; set; }
+    public string FacilityName { get; set; }
+    public string City { get; set; }
 }

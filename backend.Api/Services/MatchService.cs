@@ -452,8 +452,6 @@ namespace backend.Infrastructure.Services
             try
             {
                 var spec = new MatchPlayersSpecification(userId, ParticipationStatus.Invited);
-
-                  
                 var invitations = await _matchPlayerRepository.GetAllWithSpecAsync(spec);
 
                 var invitationDtos = invitations.Select(invitation =>
@@ -461,6 +459,10 @@ namespace backend.Infrastructure.Services
                     var match = invitation.Match;
                     var sport = match?.Sport;
                     var inviter = invitation.InvitedByUser;
+                    var booking = match?.Booking;
+                    var court = booking?.Court;
+                    var facility = court?.Facility;
+                    var address = facility?.Address;
 
                     return new MatchInvitationDto
                     {
@@ -469,7 +471,11 @@ namespace backend.Infrastructure.Services
                         SportId = sport?.Id ?? 0,
                         SportName = sport?.Name ?? "Unknown",
                         InviterId = inviter?.Id ?? 0,
-                        InviterName = inviter?.UserName ?? "Unknown" // Fixed the issue by directly accessing UserName  
+                        InviterName = inviter?.UserName ?? "Unknown",
+                        BookingStartTime = booking?.StartTime,
+                        BookingEndTime = booking?.EndTime,
+                        FacilityName = facility?.Name ?? "Unknown",
+                        City = address?.City ?? "Unknown"
                     };
                 }).ToList();
 
@@ -480,7 +486,8 @@ namespace backend.Infrastructure.Services
                 _logger.LogError(ex, "Error retrieving invitations for user {UserId}", userId);
                 throw;
             }
-        }  
+        }
+
 
 
 
