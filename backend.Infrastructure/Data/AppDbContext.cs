@@ -99,7 +99,13 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(mp => mp.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-            
+
+        modelBuilder.Entity<MatchPlayer>()
+            .HasOne(mp => mp.InvitedByUser)
+            .WithMany()
+            .HasForeignKey(mp => mp.InvitedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // PlayerRating configuration
         modelBuilder.Entity<PlayerRating>().ToTable("PlayerRatings");
         modelBuilder.Entity<PlayerRating>()

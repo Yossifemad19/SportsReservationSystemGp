@@ -397,7 +397,8 @@ namespace backend.Infrastructure.Services
                     MatchId = matchId,
                     UserId = invitedUserId,
                     Status = ParticipationStatus.Invited,
-                    InvitedAt = DateTime.UtcNow
+                    InvitedAt = DateTime.UtcNow,
+                    InvitedByUserId = inviterUserId
                 };
 
                 _matchPlayerRepository.Add(player);
@@ -444,6 +445,131 @@ namespace backend.Infrastructure.Services
                 throw;
             }
         }
+
+
+        public async Task<List<MatchInvitationDto>> GetUserInvitationsAsync(int userId)
+        {
+            try
+            {
+                var spec = new MatchPlayersSpecification(userId, ParticipationStatus.Invited);
+
+                  
+                var invitations = await _matchPlayerRepository.GetAllWithSpecAsync(spec);
+
+                var invitationDtos = invitations.Select(invitation =>
+                {
+                    var match = invitation.Match;
+                    var sport = match?.Sport;
+                    var inviter = invitation.InvitedByUser;
+
+                    return new MatchInvitationDto
+                    {
+                        MatchId = match?.Id ?? 0,
+                        MatchTitle = match?.Title ?? "Unknown",
+                        SportId = sport?.Id ?? 0,
+                        SportName = sport?.Name ?? "Unknown",
+                        InviterId = inviter?.Id ?? 0,
+                        InviterName = inviter?.UserName ?? "Unknown" // Fixed the issue by directly accessing UserName  
+                    };
+                }).ToList();
+
+                return invitationDtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving invitations for user {UserId}", userId);
+                throw;
+            }
+        }  
+
+
+
+
+
+
+        /*
+        public async Task<bool> RequestToJoinMatchAsync(int matchId, int userId)
+        {
+            try
+            {
+                var match = await _matchRepository.GetByIdAsync(matchId);
+                if (match == null)
+                {
+                    throw new InvalidOperationException("Match not found");
+                }
+                // Check if match is open
+                if (match.Status != MatchStatus.Open)
+                {
+                    throw new InvalidOperationException("Cannot join a match that is not open");
+                }
+                
+                // Check if player is already in the match
+                var existingPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
+                if (existingPlayer != null)
+                {
+                    throw new InvalidOperationException("You are already part of this match");
+                }
+                
+                // Check if match is full
+                var currentPlayerCount = (await _matchPlayerRepository.GetAllAsync())
+                    .Count(mp => mp.MatchId == matchId && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
+                
+                if (currentPlayerCount >= match.TeamSize * 2)
+                {
+                    throw new InvalidOperationException("Match is full");
+                }
+                
+                // Get current team sizes
+                var teamAPlayers = (await _matchPlayerRepository.GetAllAsync())
+                    .Count(mp => mp.MatchId == matchId && mp.Team == "A" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
+                var teamBPlayers = (await _matchPlayerRepository.GetAllAsync())
+                    .Count(mp => mp.MatchId == matchId && mp.Team == "B" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
+
+                // Determine which team to assign based on current sizes
+                string assignedTeam = teamAPlayers <= teamBPlayers ? "A" : "B";
+                
+                // Check if player meets skill requirements
+                if (match.MinSkillLevel.HasValue || match.MaxSkillLevel.HasValue)
+                {
+                    var playerProfile = await _playerProfileRepository.FindAsync(p => p.UserId == userId);
+                    if (playerProfile == null)
+                    {
+                        throw new InvalidOperationException("Player profile not found");
+                    }
+                    
+                    if (match.MinSkillLevel.HasValue && playerProfile.SkillLevel < match.MinSkillLevel.Value)
+                    {
+                        throw new InvalidOperationException($"Your skill level is too low for this match (minimum: {match.MinSkillLevel})");
+                    }
+                    
+                    if (match.MaxSkillLevel.HasValue && playerProfile.SkillLevel > match.MaxSkillLevel.Value)
+                    {
+                        throw new InvalidOperationException($"Your skill level is too high for this match (maximum: {match.MaxSkillLevel})");
+                    }
+                }
+                
+                // Add player request
+                var player = new MatchPlayer
+                {
+                    MatchId = matchId,
+                    UserId = userId,
+                    Status = ParticipationStatus.Requested,
+                    InvitedAt = DateTime.UtcNow,
+                    Team = assignedTeam
+                };
+                
+                _matchPlayerRepository.Add(player);
+                await _unitOfWork.Complete();
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error requesting to join match {MatchId} by user {UserId}", matchId, userId);
+                throw;
+            }
+        }
+        */
 
         public async Task<bool> JoinMatchAsync(int matchId, int userId, string team)
         {

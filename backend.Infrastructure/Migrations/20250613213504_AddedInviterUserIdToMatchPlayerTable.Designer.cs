@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Infrastructure.Data;
@@ -11,9 +12,11 @@ using backend.Infrastructure.Data;
 namespace backend.Repository.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250613213504_AddedInviterUserIdToMatchPlayerTable")]
+    partial class AddedInviterUserIdToMatchPlayerTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -290,7 +293,7 @@ namespace backend.Repository.Migrations
                     b.Property<DateTime>("InvitedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("InvitedByUserId")
+                    b.Property<int>("InvitedByUserId")
                         .HasColumnType("integer");
 
                     b.Property<int>("MatchId")
@@ -700,7 +703,8 @@ namespace backend.Repository.Migrations
                     b.HasOne("backend.Core.Entities.User", "InvitedByUser")
                         .WithMany()
                         .HasForeignKey("InvitedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("backend.Core.Entities.Match", "Match")
                         .WithMany("Players")
