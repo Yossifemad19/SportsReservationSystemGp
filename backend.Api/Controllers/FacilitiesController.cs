@@ -75,16 +75,7 @@ public class FacilitiesController : ControllerBase
         return Ok(result);
     }
 
-    //[HttpGet("GetAll")]
-    //public async Task<IActionResult> GetAllFacilities()
-    //{
-    //    var result = await _facilityService.GetAllFacilities();
 
-    //    if (!result.Success || result.Data == null || !result.Data.Any())
-    //        return NotFound(result.Message);
-
-    //    return Ok(result);
-    //}
     [HttpGet]
     public async Task<IActionResult> GetAllFacilities([FromQuery] bool isOwner = false,[FromQuery] int? sportId = null,[FromQuery] string? city = null)
     {

@@ -90,4 +90,23 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
                        b.CheckInTime == null)
             .ToListAsync();
     }
+    public async Task<bool> HasConflictAsync(int courtId, DateOnly date, TimeSpan startTime, TimeSpan endTime)
+    {
+        
+        var sql = @"
+        SELECT 1 FROM ""Bookings""
+        WHERE ""CourtId"" = @p0
+          AND ""Date"" = @p1
+          AND ""StartTime"" < @p3
+          AND ""EndTime"" > @p2
+        FOR UPDATE
+        LIMIT 1";
+
+        var result = await _context.Bookings
+            .FromSqlRaw(sql, courtId, date, startTime, endTime)
+            .AnyAsync();
+
+        return result;
+    }
+
 }

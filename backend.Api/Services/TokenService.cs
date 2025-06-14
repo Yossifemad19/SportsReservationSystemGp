@@ -33,7 +33,6 @@ public class TokenService : ITokenService
 
     public string GenerateToken(User user)
     {
-        // Get role name asynchronously but execute synchronously
         var userRole = _unitOfWork.Repository<UserRole>().GetByIdAsync(user.UserRoleId).GetAwaiter().GetResult();
         var roleName = userRole?.RoleName ?? "Unknown";
 
@@ -57,7 +56,6 @@ public class TokenService : ITokenService
 
     public string GenerateToken(Owner owner)
     {
-        // Get role name asynchronously but execute synchronously
         var userRole = _unitOfWork.Repository<UserRole>().GetByIdAsync(owner.UserRoleId).GetAwaiter().GetResult();
         var roleName = userRole?.RoleName ?? "Unknown";
 
@@ -81,7 +79,6 @@ public class TokenService : ITokenService
 
     public string GenerateToken(Admin admin)
     {
-        // Get role name asynchronously but execute synchronously
         var userRole = _unitOfWork.Repository<UserRole>().GetByIdAsync(admin.UserRoleId).GetAwaiter().GetResult();
         var roleName = userRole?.RoleName ?? "Unknown";
 

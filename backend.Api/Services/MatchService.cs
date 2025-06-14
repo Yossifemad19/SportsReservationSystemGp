@@ -424,14 +424,12 @@ namespace backend.Infrastructure.Services
                     throw new InvalidOperationException("Invitation not found");
                 }
                 
-                // Check if match is still open
                 var match = await _matchRepository.GetByIdAsync(matchId);
                 if (match.Status != MatchStatus.Open)
                 {
                     throw new InvalidOperationException("Cannot respond to invitation for a match that is not open");
                 }
                 
-                // Update invitation status
                 invitation.Status = accept ? ParticipationStatus.Accepted : ParticipationStatus.Declined;
                 invitation.ResponseAt = DateTime.UtcNow;
                 _matchPlayerRepository.Update(invitation);
@@ -481,96 +479,7 @@ namespace backend.Infrastructure.Services
                 throw;
             }
         }  
-
-
-
-
-
-
-        /*
-        public async Task<bool> RequestToJoinMatchAsync(int matchId, int userId)
-        {
-            try
-            {
-                var match = await _matchRepository.GetByIdAsync(matchId);
-                if (match == null)
-                {
-                    throw new InvalidOperationException("Match not found");
-                }
-                // Check if match is open
-                if (match.Status != MatchStatus.Open)
-                {
-                    throw new InvalidOperationException("Cannot join a match that is not open");
-                }
-                
-                // Check if player is already in the match
-                var existingPlayer = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
-                if (existingPlayer != null)
-                {
-                    throw new InvalidOperationException("You are already part of this match");
-                }
-                
-                // Check if match is full
-                var currentPlayerCount = (await _matchPlayerRepository.GetAllAsync())
-                    .Count(mp => mp.MatchId == matchId && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
-                
-                if (currentPlayerCount >= match.TeamSize * 2)
-                {
-                    throw new InvalidOperationException("Match is full");
-                }
-                
-                // Get current team sizes
-                var teamAPlayers = (await _matchPlayerRepository.GetAllAsync())
-                    .Count(mp => mp.MatchId == matchId && mp.Team == "A" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
-                var teamBPlayers = (await _matchPlayerRepository.GetAllAsync())
-                    .Count(mp => mp.MatchId == matchId && mp.Team == "B" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected);
-
-                // Determine which team to assign based on current sizes
-                string assignedTeam = teamAPlayers <= teamBPlayers ? "A" : "B";
-                
-                // Check if player meets skill requirements
-                if (match.MinSkillLevel.HasValue || match.MaxSkillLevel.HasValue)
-                {
-                    var playerProfile = await _playerProfileRepository.FindAsync(p => p.UserId == userId);
-                    if (playerProfile == null)
-                    {
-                        throw new InvalidOperationException("Player profile not found");
-                    }
-                    
-                    if (match.MinSkillLevel.HasValue && playerProfile.SkillLevel < match.MinSkillLevel.Value)
-                    {
-                        throw new InvalidOperationException($"Your skill level is too low for this match (minimum: {match.MinSkillLevel})");
-                    }
-                    
-                    if (match.MaxSkillLevel.HasValue && playerProfile.SkillLevel > match.MaxSkillLevel.Value)
-                    {
-                        throw new InvalidOperationException($"Your skill level is too high for this match (maximum: {match.MaxSkillLevel})");
-                    }
-                }
-                
-                // Add player request
-                var player = new MatchPlayer
-                {
-                    MatchId = matchId,
-                    UserId = userId,
-                    Status = ParticipationStatus.Requested,
-                    InvitedAt = DateTime.UtcNow,
-                    Team = assignedTeam
-                };
-                
-                _matchPlayerRepository.Add(player);
-                await _unitOfWork.Complete();
-                
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error requesting to join match {MatchId} by user {UserId}", matchId, userId);
-                throw;
-            }
-        }
-        */
-
+        
         public async Task<bool> JoinMatchAsync(int matchId, int userId, string team)
         {
             var match = await _matchRepository.GetByIdAsync(matchId);
@@ -608,7 +517,6 @@ namespace backend.Infrastructure.Services
             if (currentPlayerCount >= match.TeamSize * 2)
                 throw new InvalidOperationException("Match is full");
 
-            // Validate team parameter
             if (string.IsNullOrEmpty(team) || (team != "A" && team != "B"))
                 throw new InvalidOperationException("Team must be either 'A' or 'B'");
 
@@ -617,7 +525,6 @@ namespace backend.Infrastructure.Services
             var teamBPlayers = allPlayers
                 .Count(mp => mp.MatchId == matchId && mp.Team == "B" && mp.Status != ParticipationStatus.Declined && mp.Status != ParticipationStatus.Rejected && mp.Status != ParticipationStatus.Kicked);
 
-            // Check if the requested team is full
             if ((team == "A" && teamAPlayers >= match.TeamSize) || (team == "B" && teamBPlayers >= match.TeamSize))
                 throw new InvalidOperationException($"Team {team} is full");
 
@@ -635,35 +542,26 @@ namespace backend.Infrastructure.Services
 
             return true;
         }
-
-
-
-
-
         public async Task<bool> CheckInPlayerAsync(int matchId, int userId)
         {
             try
             {
-                // Find player
                 var player = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == userId);
                 if (player == null)
                 {
                     throw new InvalidOperationException("Player not found in match");
                 }
                 
-                // Check if player can check in (accepted or approved)
                 if (player.Status != ParticipationStatus.Accepted && player.Status != ParticipationStatus.Approved)
                 {
                     throw new InvalidOperationException("Cannot check in with current status");
                 }
                 
-                // Update status
                 player.Status = ParticipationStatus.CheckedIn;
                 player.CheckedInAt = DateTime.UtcNow;
                 _matchPlayerRepository.Update(player);
                 await _unitOfWork.Complete();
                 
-                // Check if all players are checked in, and if so, update match status
                 var match = await _matchRepository.GetByIdAsync(matchId);
                 if (match.Status == MatchStatus.Open && await AllPlayersCheckedInAsync(matchId))
                 {
@@ -696,7 +594,6 @@ namespace backend.Infrastructure.Services
             }
         }
 
-        // Team management
         public async Task<bool> AssignTeamAsync(int matchId, int playerId, string team)
         {
             try
@@ -708,13 +605,11 @@ namespace backend.Infrastructure.Services
                 }
                 
                 
-                // Validate team assignment
                 if (string.IsNullOrEmpty(team) || (team != "A" && team != "B"))
                 {
                     throw new InvalidOperationException("Team must be either 'A' or 'B'");
                 }
                 
-                // Update team
                 player.Team = team;
                 _matchPlayerRepository.Update(player);
                 await _unitOfWork.Complete();
@@ -728,12 +623,10 @@ namespace backend.Infrastructure.Services
             }
         }
 
-        // Ratings
         public async Task<bool> RatePlayerAsync(int matchId, int raterUserId, int ratedUserId, int skillRating, int sportsmanshipRating, string comment)
         {
             try
             {
-                // Check if match is completed
                 var match = await _matchRepository.GetByIdAsync(matchId);
                 if (match == null)
                 {
@@ -745,7 +638,6 @@ namespace backend.Infrastructure.Services
                     throw new InvalidOperationException("Cannot rate players for a match that is not completed");
                 }
                 
-                // Check if both users participated in the match
                 var rater = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == raterUserId && mp.Status == ParticipationStatus.CheckedIn);
                 var rated = await _matchPlayerRepository.FindAsync(mp => mp.MatchId == matchId && mp.UserId == ratedUserId && mp.Status == ParticipationStatus.CheckedIn);
                 
@@ -754,20 +646,17 @@ namespace backend.Infrastructure.Services
                     throw new InvalidOperationException("Both rater and rated user must have participated in the match");
                 }
                 
-                // Check if user is rating themselves
                 if (raterUserId == ratedUserId)
                 {
                     throw new InvalidOperationException("Cannot rate yourself");
                 }
                 
-                // Check if already rated
                 var existingRating = await _playerRatingRepository.FindAsync(pr => pr.MatchId == matchId && pr.RaterUserId == raterUserId && pr.RatedUserId == ratedUserId);
                 if (existingRating != null)
                 {
                     throw new InvalidOperationException("You have already rated this player for this match");
                 }
                 
-                // Create rating
                 var rating = new PlayerRating
                 {
                     MatchId = matchId,
@@ -782,24 +671,18 @@ namespace backend.Infrastructure.Services
                 _playerRatingRepository.Add(rating);
                 await _unitOfWork.Complete();
                 
-                // Update player profile with new skill rating
                 var ratedProfile = await _playerProfileRepository.FindAsync(p => p.UserId == ratedUserId);
                 if (ratedProfile != null)
                 {
-                    // Update matches played and won
                     ratedProfile.MatchesPlayed += 1;
                     
-                    // Update skill based on all ratings
                     var allRatings = await _playerRatingRepository.GetAllAsync();
                     var userRatings = allRatings.Where(r => r.RatedUserId == ratedUserId).ToList();
                     
                     if (userRatings.Any())
                     {
-                        // Calculate new skill level (average of all ratings)
                         var averageSkill = userRatings.Average(r => r.SkillRating);
-                        // Scale from 1-5 to 1-10
                         ratedProfile.SkillLevel = (int)Math.Round(averageSkill * 2);
-                        // Ensure within bounds
                         ratedProfile.SkillLevel = Math.Min(10, Math.Max(1, ratedProfile.SkillLevel));
                     }
                     
@@ -820,7 +703,6 @@ namespace backend.Infrastructure.Services
         {
             try
             {
-                // Create a specification that includes the related users
                 var spec = new PlayerRatingsWithUsersSpecification(matchId);
                 var ratings = await _playerRatingRepository.GetAllWithSpecAsync(spec);
                 return ratings.ToList();
@@ -850,26 +732,22 @@ namespace backend.Infrastructure.Services
         {
             try
             {
-                // Get all players in the match except the user
                 var allPlayers = (await _matchPlayerRepository.GetAllAsync())
                     .Where(mp => mp.MatchId == matchId && mp.Status == ParticipationStatus.CheckedIn && mp.UserId != userId)
                     .ToList();
                 
                 if (!allPlayers.Any())
                 {
-                    return true; // No other players to rate
+                    return true; 
                 }
                 
-                // Get all ratings by the user for this match
                 var allRatings = await _playerRatingRepository.GetAllAsync();
                 var userRatings = allRatings
                     .Where(pr => pr.MatchId == matchId && pr.RaterUserId == userId)
                     .ToList();
                 
-                // Get the user IDs that the user has rated
                 var ratedUserIds = userRatings.Select(pr => pr.RatedUserId).ToList();
                 
-                // Check if all players have been rated
                 return allPlayers.All(p => ratedUserIds.Contains(p.UserId));
             }
             catch (Exception ex)
@@ -879,7 +757,6 @@ namespace backend.Infrastructure.Services
             }
         }
 
-        // Match status management
         public async Task<bool> CanStartMatchAsync(int matchId)
         {
             try
@@ -890,17 +767,14 @@ namespace backend.Infrastructure.Services
                     throw new InvalidOperationException("Match not found");
                 }
                 
-                // Match must be open
                 if (match.Status != MatchStatus.Open)
                 {
                     return false;
                 }
                 
-                // Check if minimum number of players are checked in
                 var checkedInPlayers = (await _matchPlayerRepository.GetAllAsync())
                     .Count(mp => mp.MatchId == matchId && mp.Status == ParticipationStatus.CheckedIn);
                 
-                // Need at least 2 players per team
                 return checkedInPlayers >= 2 * 2;
             }
             catch (Exception ex)
@@ -914,17 +788,14 @@ namespace backend.Infrastructure.Services
         {
             try
             {
-                // Get all accepted/approved players
                 var allPlayers = (await _matchPlayerRepository.GetAllAsync())
                     .Where(mp => mp.MatchId == matchId && (mp.Status == ParticipationStatus.Accepted || mp.Status == ParticipationStatus.Approved))
                     .ToList();
                 
-                // Get all checked-in players
                 var checkedInPlayers = (await _matchPlayerRepository.GetAllAsync())
                     .Where(mp => mp.MatchId == matchId && mp.Status == ParticipationStatus.CheckedIn)
                     .ToList();
                 
-                // Return true if all accepted/approved players are checked in
                 return allPlayers.Count == checkedInPlayers.Count;
             }
             catch (Exception ex)
@@ -944,19 +815,16 @@ namespace backend.Infrastructure.Services
                     throw new InvalidOperationException("Match not found");
                 }
                 
-                // Check if user is creator
                 if (match.CreatorUserId != userId)
                 {
                     throw new InvalidOperationException("Only the match creator can start the match");
                 }
                 
-                // Check if match can start
                 if (!await CanStartMatchAsync(matchId))
                 {
                     throw new InvalidOperationException("Cannot start match at this time");
                 }
                 
-                // Update match status
                 match.Status = MatchStatus.InProgress;
                 _matchRepository.Update(match);
                 await _unitOfWork.Complete();

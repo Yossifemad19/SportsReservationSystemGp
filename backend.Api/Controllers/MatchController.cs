@@ -36,7 +36,6 @@ namespace backend.API.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> CreateMatch([FromBody] CreateMatchRequest request)
         {
             try
@@ -236,7 +235,6 @@ namespace backend.API.Controllers
             {
                 var userId = int.Parse(User.FindFirst("sub")?.Value);
                 
-                // Check if user is match creator
                 var match = await _matchService.GetMatchByIdAsync(matchId);
                 if (match == null)
                 {
@@ -245,7 +243,6 @@ namespace backend.API.Controllers
                 
                 if (match.CreatorUserId != userId)
                 {
-                    // Use StatusCode(403) with a message instead of Forbid()
                     return StatusCode(403, "Only the match creator can complete the match");
                 }
                 
@@ -355,28 +352,7 @@ namespace backend.API.Controllers
                 return StatusCode(500, "An error occurred while requesting to join the match");
             }
         }
-
-        //[HttpPost("{matchId}/respond-join-request")]
-        //public async Task<IActionResult> RespondToJoinRequest(int matchId, [FromBody] RespondJoinRequest request)
-        //{
-        //    try
-        //    {
-        //        var userId = int.Parse(User.FindFirst("sub")?.Value);
-        //        var result = await _matchService.RespondToJoinRequestAsync(matchId, request.RequesterId, userId, request.Approve);
-                
-        //        return Ok(new { Success = result });
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error responding to join request for match {MatchId}", matchId);
-        //        return StatusCode(500, "An error occurred while responding to the join request");
-        //    }
-        //}
-
+        
         [HttpPost("{matchId}/check-in")]
         public async Task<IActionResult> CheckIn(int matchId)
         {
@@ -422,7 +398,6 @@ namespace backend.API.Controllers
             {
                 var userId = int.Parse(User.FindFirst("sub")?.Value);
                 
-                // First check if user is match creator
                 var match = await _matchService.GetMatchByIdAsync(matchId);
                 if (match == null)
                 {
@@ -431,7 +406,6 @@ namespace backend.API.Controllers
                 
                 if (match.CreatorUserId != userId)
                 {
-                    // Use StatusCode(403) with a message instead of Forbid()
                     return StatusCode(403, "Only the match creator can assign teams");
                 }
                 

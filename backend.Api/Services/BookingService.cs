@@ -12,86 +12,82 @@ namespace backend.Api.Services;
 public class BookingService : IBookingService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private const int NO_SHOW_BLOCK_DAYS = 30; // Block user for 30 days after a no-show
+    private const int NO_SHOW_BLOCK_DAYS = 30; 
 
     public BookingService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<(bool Success, string Message)> BookCourtAsync(object request, int userId)
+   public async Task<(bool Success, string Message)> BookCourtAsync(object request, int userId)
+{
+    var bookingRequest = (BookingRequestDto)request;
+
+    var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+    if (user == null)
+        return (false, "User not found");
+
+    if (user.IsBlocked && user.BlockEndDate > DateTime.Now)
+        return (false, $"You are blocked until {user.BlockEndDate:yyyy-MM-dd} due to previous no-shows");
+
+    if (user.IsBlocked && user.BlockEndDate <= DateTime.Now)
     {
-        var bookingRequest = (BookingRequestDto)request;
-        
-        // Check if user is blocked
-        var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
-        if (user == null)
-            return (false, "User not found");
+        user.IsBlocked = false;
+        user.BlockEndDate = null;
+        _unitOfWork.Repository<User>().Update(user);
+    }
 
-        if (user.IsBlocked && user.BlockEndDate > DateTime.Now)
-            return (false, $"You are blocked until {user.BlockEndDate:yyyy-MM-dd} due to previous no-shows");
+    var court = await _unitOfWork.Repository<Court>().GetByIdAsync(bookingRequest.CourtId);
+    if (court == null)
+        return (false, "Court not found");
 
-        // If user was blocked but block period has expired, unblock them
-        if (user.IsBlocked && user.BlockEndDate <= DateTime.Now)
-        {
-            user.IsBlocked = false;
-            user.BlockEndDate = null;
-            _unitOfWork.Repository<User>().Update(user);
-        }
+    var booking = new Booking
+    {
+        UserId = userId,
+        CourtId = bookingRequest.CourtId,
+        Date = bookingRequest.Date,
+        StartTime = bookingRequest.StartTime,
+        EndTime = bookingRequest.EndTime,
+        status = BookingStatus.Pending,
+        CheckInTime = DateTime.UtcNow
+    };
 
-        // Validate court exists and is active
-        var court = await _unitOfWork.Repository<Court>().GetByIdAsync(bookingRequest.CourtId);
-        if (court == null)
-            return (false, "Court not found");
+    using var transaction = await _unitOfWork.BeginTransactionAsync();
+    try
+    {
+        // ✅ Check for overlapping bookings inside the transaction (with row-level lock)
+        var hasConflict = await _unitOfWork.BookingRepository.HasConflictAsync(
+            booking.CourtId, booking.Date, booking.StartTime, booking.EndTime);
 
-        // Check if court is available for the requested time
-        var isAvailable = await _unitOfWork.BookingRepository.IsCourtAvailableAsync(
-            bookingRequest.CourtId, bookingRequest.Date, bookingRequest.StartTime, bookingRequest.EndTime);
-
-        if (!isAvailable)
-            return (false, "Court is not available for the requested time");
-
-        // Create booking
-        var booking = new Booking
-        {
-            UserId = userId,
-            CourtId = bookingRequest.CourtId,
-            Date = bookingRequest.Date,
-            StartTime = bookingRequest.StartTime,
-            EndTime = bookingRequest.EndTime,
-            status = BookingStatus.Pending,
-            CheckInTime = DateTime.UtcNow
-        };
-
-        // Start transaction for concurrency control
-        using var transaction = await _unitOfWork.BeginTransactionAsync();
-        try
-        {
-            _unitOfWork.Repository<Booking>().Add(booking);
-            var result = await _unitOfWork.Complete();
-
-            if (result <= 0)
-            {
-                await transaction.RollbackAsync();
-                return (false, "Failed to create booking");
-            }
-
-            await transaction.CommitAsync();
-            return (true, "Booking created successfully");
-        }
-        catch (Exception ex)
+        if (hasConflict)
         {
             await transaction.RollbackAsync();
-            return (false, $"Error creating booking: {ex.Message}");
+            return (false, "Court is not available for the requested time");
         }
+
+        _unitOfWork.Repository<Booking>().Add(booking);
+        var result = await _unitOfWork.Complete();
+
+        if (result <= 0)
+        {
+            await transaction.RollbackAsync();
+            return (false, "Failed to create booking");
+        }
+
+        await transaction.CommitAsync();
+        return (true, "Booking created successfully");
     }
+    catch (Exception ex)
+    {
+        await transaction.RollbackAsync();
+        return (false, $"Error creating booking: {ex.Message}");
+    }
+}
 
     public async Task<object> GetBookingsForCourtAsync(int courtId, DateOnly date)
     {
-        // Get bookings for the specific court and date
         var bookings = await _unitOfWork.BookingRepository.GetBookingsForCourtAsync(courtId, date);
-
-        // Group bookings by time slots
+        
       var bookingSlots = bookings
     .GroupBy(b => b.Date)
     .OrderBy(group => group.Key)
@@ -119,18 +115,15 @@ return new BookingResponseDto
 
     public async Task<(bool Success, string Message)> CancelBookingAsync(int bookingId, int userId)
     {
-        // Get booking with details 
+
         var booking = await _unitOfWork.BookingRepository.GetBookingWithDetailsAsync(bookingId);
         
-        // Validate booking
         if (booking == null)
             return (false, "Booking not found");
-            
-        // Verify user 
+        
         if (booking.UserId != userId)
             return (false, "You are not authorized to cancel this booking");
-            
-        // Verify booking can be cancelled (not completed or cancelled)
+        
         if (booking.status == BookingStatus.Completed || booking.status == BookingStatus.Cancelled)
             return (false, $"Cannot cancel booking with status: {booking.status}");
             
@@ -153,22 +146,18 @@ return new BookingResponseDto
 
     public async Task<(bool Success, string Message)> ConfirmBookingAsync(int bookingId, int userId)
     {
-        // Get booking with details 
+
         var booking = await _unitOfWork.BookingRepository.GetBookingWithDetailsAsync(bookingId);
-        
-        // Validate booking
+
         if (booking == null)
             return (false, "Booking not found");
-            
-        // Verify user
+        
         if (booking.UserId != userId)
             return (false, "You are not authorized to confirm this booking");
-            
-        // Verify booking can be confirmed (must be pending)
+        
         if (booking.status != BookingStatus.Pending)
             return (false, $"Cannot confirm booking with status: {booking.status}");
-            
-        // Update status
+        
         booking.status = BookingStatus.Confirmed;
         
         _unitOfWork.Repository<Booking>().Update(booking);
@@ -202,22 +191,17 @@ return new BookingResponseDto
         });
     }
     
-    // for confirm attend the booking
     public async Task<(bool Success, string Message)> CheckInBookingAsync(int bookingId, int ownerId)
     {
-        // Get booking with details 
         var booking = await _unitOfWork.BookingRepository.GetBookingWithDetailsAsync(bookingId);
         
-        // Validate booking
         if (booking == null)
             return (false, "Booking not found");
-            
-        // Verify owner 
+
         var facilityOwner = await _unitOfWork.Repository<Facility>().GetByIdAsync(booking.Court.FacilityId);
         if (facilityOwner.OwnerId != ownerId)
             return (false, "You are not authorized to check in this booking");
-            
-        // Check booking is in confirmed status
+
         if (booking.status != BookingStatus.Confirmed)
             return (false, $"Cannot check in booking with status: {booking.status}");
             
@@ -280,23 +264,19 @@ return new BookingResponseDto
         return (decimal)durationHours * booking.Court.PricePerHour;
     }
     
-    // New method to handle no-shows
     public async Task HandleNoShowsAsync()
     {
         var currentTime = DateTime.Now;
         var currentDate = DateOnly.FromDateTime(currentTime);
         var currentTimeOnly = TimeOnly.FromDateTime(currentTime);
-
-        // Get all confirmed bookings that have ended without check-in
+        
         var noShowBookings = await _unitOfWork.BookingRepository.GetNoShowBookingsAsync(currentDate, currentTimeOnly);
 
         foreach (var booking in noShowBookings)
         {
-            // Update booking status to NoShow
             booking.status = BookingStatus.NoShow;
             _unitOfWork.Repository<Booking>().Update(booking);
-
-            // Block the user
+            
             var user = await _unitOfWork.Repository<User>().GetByIdAsync(booking.UserId);
             if (user != null)
             {
